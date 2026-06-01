@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as CreateRouteImport } from './routes/create'
 import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as IndexRouteImport } from './routes/index'
 
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExploreRoute = ExploreRouteImport.update({
   id: '/explore',
   path: '/explore',
@@ -40,12 +46,14 @@ export interface FileRoutesByFullPath {
   '/collections': typeof CollectionsRoute
   '/create': typeof CreateRoute
   '/explore': typeof ExploreRoute
+  '/profile': typeof ProfileRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/collections': typeof CollectionsRoute
   '/create': typeof CreateRoute
   '/explore': typeof ExploreRoute
+  '/profile': typeof ProfileRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,14 @@ export interface FileRoutesById {
   '/collections': typeof CollectionsRoute
   '/create': typeof CreateRoute
   '/explore': typeof ExploreRoute
+  '/profile': typeof ProfileRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/collections' | '/create' | '/explore'
+  fullPaths: '/' | '/collections' | '/create' | '/explore' | '/profile'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/collections' | '/create' | '/explore'
-  id: '__root__' | '/' | '/collections' | '/create' | '/explore'
+  to: '/' | '/collections' | '/create' | '/explore' | '/profile'
+  id: '__root__' | '/' | '/collections' | '/create' | '/explore' | '/profile'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,10 +76,18 @@ export interface RootRouteChildren {
   CollectionsRoute: typeof CollectionsRoute
   CreateRoute: typeof CreateRoute
   ExploreRoute: typeof ExploreRoute
+  ProfileRoute: typeof ProfileRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/explore': {
       id: '/explore'
       path: '/explore'
@@ -107,6 +124,7 @@ const rootRouteChildren: RootRouteChildren = {
   CollectionsRoute: CollectionsRoute,
   CreateRoute: CreateRoute,
   ExploreRoute: ExploreRoute,
+  ProfileRoute: ProfileRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
