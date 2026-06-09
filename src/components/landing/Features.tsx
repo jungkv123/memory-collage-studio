@@ -5,22 +5,20 @@ export function Features() {
     <section className="mt-32 max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-20 items-center">
       <div className="space-y-6 order-2 md:order-1">
         <span className="inline-block bg-dusty/15 text-dusty px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.25em]">
-          §03 — Map Your Heart
+          §03 — 描绘你的心
         </span>
         <h2 className="font-serif text-5xl md:text-6xl leading-tight">
-          Connected<br />
-          <span className="italic">memories.</span>
+          被串联的<br />
+          <span className="italic">记忆。</span>
         </h2>
         <p className="text-charcoal/65 leading-relaxed max-w-md">
-          Fragmented doesn't just show where you went; it shows how you
-          felt. Trace your route with hand-drawn paths that connect sensory
-          snapshots into a single emotional geography.
+          Fragmented 不只是记录你去过哪里，更呈现你当时的感受。用手绘的路径串起每一张感官快照，拼出一份属于你的情绪地图。
         </p>
         <ul className="space-y-4 pt-2">
           {[
-            "Dotted paths connect photo clusters",
-            "Hand-drawn pins for every detour",
-            "Elevation, weather & soundscapes",
+            "虚线路径串联照片群组",
+            "为每一次绕路手绘一枚图钉",
+            "海拔、天气与环境声景",
           ].map((line) => (
             <li key={line} className="flex items-center gap-4 font-medium">
               <span className="size-6 border border-charcoal rounded-full flex items-center justify-center">
@@ -37,9 +35,9 @@ export function Features() {
           <img src={map} alt="Hand drawn watercolor map" className="w-full h-full object-cover" />
         </div>
         {/* Pins */}
-        <Pin top="22%" left="36%" color="bg-charcoal" label="Paris" />
-        <Pin top="44%" left="58%" color="bg-pinkv" label="Roma" />
-        <Pin top="64%" left="30%" color="bg-dusty" label="Lisboa" />
+        <Pin top="22%" left="36%" color="bg-charcoal" label="巴黎" />
+        <Pin top="44%" left="58%" color="bg-pinkv" label="罗马" />
+        <Pin top="64%" left="30%" color="bg-dusty" label="里斯本" />
         {/* Dashed connector */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
           <path

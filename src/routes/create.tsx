@@ -12,10 +12,10 @@ import tokyo from "@/assets/map-tokyo-torn.jpg";
 export const Route = createFileRoute("/create")({
   head: () => ({
     meta: [
-      { title: "Create — Fragmented" },
-      { name: "description", content: "An infinite collage canvas. Drag photos, tickets, notes, stickers, and audio into a visual story." },
-      { property: "og:title", content: "Create — Fragmented" },
-      { property: "og:description", content: "Build a digital scrapbook of your travels on an infinite canvas." },
+      { title: "创作 — Fragmented" },
+      { name: "description", content: "一张无限的拼贴画布。把照片、车票、笔记、贴纸和音频拖拽成一篇视觉故事。" },
+      { property: "og:title", content: "创作 — Fragmented" },
+      { property: "og:description", content: "在无限画布上搭建你专属的数字旅行剪贴簿。" },
     ],
   }),
   component: Create,
@@ -35,26 +35,26 @@ type Frag = {
 };
 
 const initial: Frag[] = [
-  { id: 1, kind: "photo", x: 120, y: 90, r: -6, w: 240, src: polaroidTrain, text: "Bernina Express", tape: "tape" },
-  { id: 2, kind: "photo", x: 520, y: 60, r: 5, w: 200, src: polaroidItaly, text: "Cinque Terre", tape: "tape-pink" },
-  { id: 3, kind: "photo", x: 880, y: 140, r: -3, w: 210, src: polaroidKyoto, text: "Kyoto, autumn", tape: "tape-blue" },
+  { id: 1, kind: "photo", x: 120, y: 90, r: -6, w: 240, src: polaroidTrain, text: "伯尔尼纳快线", tape: "tape" },
+  { id: 2, kind: "photo", x: 520, y: 60, r: 5, w: 200, src: polaroidItaly, text: "五渔村", tape: "tape-pink" },
+  { id: 3, kind: "photo", x: 880, y: 140, r: -3, w: 210, src: polaroidKyoto, text: "京都，秋", tape: "tape-blue" },
   { id: 4, kind: "ticket", x: 200, y: 420, r: 4, w: 220, src: ticket },
   { id: 5, kind: "ticket", x: 760, y: 460, r: -7, w: 200, src: tokyo },
   { id: 6, kind: "ticket", x: 500, y: 520, r: 2, w: 180, src: envelope },
   { id: 7, kind: "sticker", x: 460, y: 320, r: 12, w: 90, color: "bg-pinkv" },
   { id: 8, kind: "sticker", x: 1100, y: 360, r: -10, w: 100, src: stamps },
-  { id: 9, kind: "note", x: 820, y: 280, r: -2, w: 240, text: "the coffee in Florence tasted like old stories and morning rain." },
-  { id: 10, kind: "note", x: 90, y: 360, r: 3, w: 200, text: "got lost in three alleys before lunch. recommend." },
-  { id: 11, kind: "audio", x: 540, y: 700, r: 1, w: 240, text: "Ocean, Lagos · 0:10" },
+  { id: 9, kind: "note", x: 820, y: 280, r: -2, w: 240, text: "佛罗伦萨的咖啡，喝起来像旧故事和清晨的雨。" },
+  { id: 10, kind: "note", x: 90, y: 360, r: 3, w: 200, text: "午餐前迷路了三条小巷。强烈推荐。" },
+  { id: 11, kind: "audio", x: 540, y: 700, r: 1, w: 240, text: "海，拉各斯 · 0:10" },
 ];
 
 const tools = [
-  { icon: "🖼", label: "Photo" },
-  { icon: "✎", label: "Note" },
-  { icon: "🗺", label: "Map" },
-  { icon: "♪", label: "Audio" },
-  { icon: "✷", label: "Sticker" },
-  { icon: "✂", label: "Tape" },
+  { icon: "🖼", label: "照片" },
+  { icon: "✎", label: "笔记" },
+  { icon: "🗺", label: "地图" },
+  { icon: "♪", label: "音频" },
+  { icon: "✷", label: "贴纸" },
+  { icon: "✂", label: "胶带" },
 ];
 
 function Create() {
@@ -89,16 +89,16 @@ function Create() {
       <div className="pt-28 px-6 flex items-center justify-between max-w-7xl mx-auto w-full">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">
-            Untitled journal · autosaved
+            未命名日志 · 已自动保存
           </p>
-          <h1 className="font-serif text-3xl italic">A small spring in Lisboa.</h1>
+          <h1 className="font-serif text-3xl italic">里斯本的一个小小春天。</h1>
         </div>
         <div className="flex items-center gap-2">
           <button className="px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] rounded-full border border-charcoal/15 hover:bg-white">
-            Preview
+            预览
           </button>
           <button className="px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] rounded-full bg-charcoal text-cream hover:bg-charcoal/85">
-            Publish
+            发布
           </button>
         </div>
       </div>
@@ -144,12 +144,12 @@ function Create() {
           <div className="absolute top-5 right-5 w-72 bg-white border border-charcoal/10 rounded-2xl p-4 scrap-shadow">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">
-                AI Layout Studio
+                AI 排版工作室
               </span>
               <span className="size-1.5 rounded-full bg-pinkv animate-pulse" />
             </div>
             <p className="font-serif italic text-lg mt-3 leading-snug">
-              Want me to compose these 11 fragments into a magazine spread?
+              要把这 11 片碎片排成一篇杂志版面吗？
             </p>
             <div className="grid grid-cols-3 gap-1.5 mt-3">
               {[1,2,3,4,5,6].map((i) => (
@@ -159,14 +159,14 @@ function Create() {
               ))}
             </div>
             <button className="w-full mt-4 bg-charcoal text-cream rounded-full py-2 text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal/85">
-              Generate spread
+              生成版面
             </button>
           </div>
 
           {/* Layers panel */}
           <div className="absolute bottom-5 right-5 w-60 bg-white/90 backdrop-blur-md border border-charcoal/10 rounded-2xl p-3 scrap-shadow">
             <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50 mb-2">
-              Layers · {items.length}
+              图层 · {items.length}
             </p>
             <ul className="space-y-1 max-h-40 overflow-auto text-xs">
               {items.slice().reverse().map((i) => (
@@ -223,7 +223,7 @@ function Fragment({ it, onDown }: { it: Frag; onDown: (e: React.MouseEvent, id: 
       <div className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
         <div className={`${it.color} size-full aspect-square rounded-full grid place-items-center border border-charcoal/10 scrap-shadow cursor-grab`}>
           <span className="text-[10px] font-bold uppercase tracking-tighter text-charcoal text-center leading-tight">
-            Lisboa<br />’26
+            里斯本<br />’26
           </span>
         </div>
       </div>

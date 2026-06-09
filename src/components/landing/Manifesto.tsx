@@ -2,26 +2,24 @@ export function Manifesto() {
   return (
     <section className="mt-32 max-w-5xl mx-auto px-6 text-center">
       <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-charcoal/50">
-        §06 — Manifesto
+        §06 — 宣言
       </span>
       <p className="mt-8 font-serif text-3xl md:text-5xl italic leading-tight text-balance text-charcoal/90">
-        “A trip is never the postcard. It's the smell of the bakery
-        downstairs, the receipt you couldn't read, the song on the radio in
-        the cab. We built <span className="not-italic font-semibold">Fragmented</span> to keep all of it.”
+        「一次旅行从来不是那张明信片。它是楼下面包房的香气、那张你读不懂的收据、出租车里收音机播的那首歌。我们做<span className="not-italic font-semibold">Fragmented</span>，是为了把这一切都留下来。」
       </p>
-      <p className="font-hand text-2xl text-dusty mt-6">— the studio, 2026</p>
+      <p className="font-hand text-2xl text-dusty mt-6">— 工作室，2026</p>
     </section>
   );
 }
 
 export function Marquee() {
   const items = [
-    "AI Layout Generator",
-    "Hand-drawn Routes",
-    "Audio Memory",
-    "Infinite Canvas",
-    "Collage Stickers",
-    "Private Orbs",
+    "AI 排版生成",
+    "手绘路线",
+    "声音记忆",
+    "无限画布",
+    "拼贴贴纸",
+    "私密星球",
   ];
   return (
     <div className="mt-20 bg-pinkv/30 border-y border-charcoal/10 py-6 overflow-hidden">

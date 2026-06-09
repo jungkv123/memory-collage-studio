@@ -5,11 +5,11 @@ import stamps from "@/assets/stamps.jpg";
 import ticket from "@/assets/ticket-paris.jpg";
 
 const orbits = [
-  { src: polaroidKyoto, label: "Kyoto", angle: 0, dist: 230, r: -8 },
-  { src: polaroidItaly, label: "Cinque Terre", angle: 72, dist: 250, r: 6 },
-  { src: polaroidMorocco, label: "Marrakesh", angle: 144, dist: 235, r: -4 },
-  { src: stamps, label: "Lisboa", angle: 216, dist: 245, r: 10 },
-  { src: ticket, label: "Paris", angle: 288, dist: 230, r: -12 },
+  { src: polaroidKyoto, label: "京都", angle: 0, dist: 230, r: -8 },
+  { src: polaroidItaly, label: "五渔村", angle: 72, dist: 250, r: 6 },
+  { src: polaroidMorocco, label: "马拉喀什", angle: 144, dist: 235, r: -4 },
+  { src: stamps, label: "里斯本", angle: 216, dist: 245, r: 10 },
+  { src: ticket, label: "巴黎", angle: 288, dist: 230, r: -12 },
 ];
 
 export function MemoryGlobe() {
@@ -19,22 +19,20 @@ export function MemoryGlobe() {
       <div className="relative max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
         <div className="space-y-6">
           <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-charcoal/50">
-            §02 — The Memory Globe
+            §02 — 记忆星球
           </span>
           <h2 className="font-serif text-5xl md:text-6xl leading-[0.95]">
-            Your travels,<br />
-            <span className="italic text-pinkv">orbiting</span> in one place.
+            你的旅程，<br />
+            <span className="italic text-pinkv">环绕</span>在同一处。
           </h2>
           <p className="text-charcoal/65 leading-relaxed max-w-md">
-            Every journal floats as a polaroid, sticker, or postcard around a
-            slow-spinning orb. Hover to peek inside. Click to fall into the
-            story.
+            每一本日志都化作宝丽来、贴纸或明信片，围绕着缓缓旋转的记忆球漂浮。悬停一窥，点击坠入故事。
           </p>
           <ul className="space-y-3 pt-2 text-sm">
             {[
-              "Drift through 2,481 collected fragments",
-              "Cluster by mood, season, or weather",
-              "Share a private orb with a travel partner",
+              "穿梭于 2,481 段已收集的碎片之间",
+              "按心情、季节或天气聚合",
+              "与同行的人共享一个私密星球",
             ].map((line) => (
               <li key={line} className="flex items-start gap-3">
                 <span className="mt-1 size-2 rounded-full bg-charcoal" />
@@ -53,10 +51,10 @@ export function MemoryGlobe() {
           <div className="relative size-44 rounded-full bg-cream border border-charcoal/10 scrap-shadow flex flex-col items-center justify-center text-center">
             <span className="font-serif italic text-4xl">2,481</span>
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-charcoal/50 mt-1">
-              Fragments
+              碎片
             </span>
             <span className="font-hand text-dusty text-xl mt-1">
-              — and counting
+              — 仍在增加
             </span>
           </div>
 

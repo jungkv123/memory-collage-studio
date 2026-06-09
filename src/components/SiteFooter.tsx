@@ -6,18 +6,17 @@ export function SiteFooter() {
         <div className="md:col-span-5 space-y-4">
           <h3 className="font-serif text-5xl italic">Fragmented.</h3>
           <p className="text-charcoal/60 max-w-sm leading-relaxed">
-            A digital archive for the souvenirs that don't fit in a box. Made
-            for wanderers, scrap-keepers, and slow rememberers.
+            一份装不进盒子的旅行纪念品的数字档案。献给漫游者、碎片收藏者，和慢慢回忆的人。
           </p>
-          <p className="font-hand text-2xl text-dusty pt-2">— travel is a feeling, not a route.</p>
+          <p className="font-hand text-2xl text-dusty pt-2">— 旅行是一种感觉，而不是一条路线。</p>
         </div>
-        <FooterCol title="Studio" items={["Manifesto", "Process", "Press kit", "Stories"]} />
-        <FooterCol title="Make" items={["Canvas", "Templates", "AI Layouts", "Audio"]} />
-        <FooterCol title="Elsewhere" items={["Instagram", "Are.na", "Pinterest", "Newsletter"]} />
+        <FooterCol title="工作室" items={["宣言", "过程", "媒体包", "故事"]} />
+        <FooterCol title="创作" items={["画布", "模板", "AI 排版", "音频"]} />
+        <FooterCol title="其他" items={["Instagram", "Are.na", "Pinterest", "邮件订阅"]} />
       </div>
       <div className="relative max-w-7xl mx-auto px-6 pb-10 flex flex-col md:flex-row justify-between items-center text-[10px] uppercase tracking-[0.25em] text-charcoal/40 gap-3">
-        <span>© 2026 Memory Archive Labs</span>
-        <span>Vol. 04 · Printed in cream &amp; ivory</span>
+        <span>© 2026 记忆档案工作室</span>
+        <span>第 04 卷 · 印于米白与象牙色</span>
       </div>
     </footer>
   );

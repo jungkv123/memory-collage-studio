@@ -13,10 +13,10 @@ import train from "@/assets/polaroid-train.jpg";
 export const Route = createFileRoute("/explore")({
   head: () => ({
     meta: [
-      { title: "Explore — Fragmented" },
-      { name: "description", content: "Wander through community-made travel collages, sound clips, and hand-drawn routes." },
-      { property: "og:title", content: "Explore — Fragmented" },
-      { property: "og:description", content: "A scrapbook feed of travel stories from around the world." },
+      { title: "探索 — Fragmented" },
+      { name: "description", content: "在社区创作的旅行拼贴、声音片段与手绘路线之间漫游。" },
+      { property: "og:title", content: "探索 — Fragmented" },
+      { property: "og:description", content: "来自世界各地的旅行故事，像一本剪贴簿一样流动。" },
     ],
   }),
   component: Explore,
@@ -32,17 +32,17 @@ type Card = {
 };
 
 const items: Card[] = [
-  { src: italy, span: "row-span-2", rotate: "-rotate-2", title: "Houses the color of fruit", place: "Cinque Terre", tape: "tape" },
-  { src: kyoto, span: "", rotate: "rotate-1", title: "Rain through cedar", place: "Kyoto", tape: "tape-pink" },
-  { src: envelope, span: "", rotate: "-rotate-1", title: "Letters I never sent", place: "Buenos Aires", tape: "tape-blue" },
-  { src: morocco, span: "row-span-2", rotate: "rotate-2", title: "Lanterns and saffron", place: "Marrakesh", tape: "tape" },
-  { src: train, span: "", rotate: "-rotate-1", title: "Window seat, west", place: "Swiss Alps", tape: "tape-pink" },
-  { src: stamps, span: "", rotate: "rotate-2", title: "Postage from strangers", place: "Lisboa", tape: "tape-blue" },
-  { src: ticket, span: "", rotate: "-rotate-2", title: "Stubs in my pocket", place: "Paris", tape: "tape" },
-  { src: map, span: "row-span-2", rotate: "rotate-1", title: "A torn map of Shibuya", place: "Tokyo", tape: "tape-pink" },
+  { src: italy, span: "row-span-2", rotate: "-rotate-2", title: "像水果般颜色的房子", place: "五渔村", tape: "tape" },
+  { src: kyoto, span: "", rotate: "rotate-1", title: "穿过雪松的雨", place: "京都", tape: "tape-pink" },
+  { src: envelope, span: "", rotate: "-rotate-1", title: "那些没寄出去的信", place: "布宜诺斯艾利斯", tape: "tape-blue" },
+  { src: morocco, span: "row-span-2", rotate: "rotate-2", title: "灯笼与藏红花", place: "马拉喀什", tape: "tape" },
+  { src: train, span: "", rotate: "-rotate-1", title: "靠窗的座位，向西", place: "瑞士阿尔卑斯", tape: "tape-pink" },
+  { src: stamps, span: "", rotate: "rotate-2", title: "来自陌生人的邮票", place: "里斯本", tape: "tape-blue" },
+  { src: ticket, span: "", rotate: "-rotate-2", title: "口袋里的票根", place: "巴黎", tape: "tape" },
+  { src: map, span: "row-span-2", rotate: "rotate-1", title: "一张撕开的涩谷地图", place: "东京", tape: "tape-pink" },
 ];
 
-const filters = ["All", "Coastal", "Cities", "Mountains", "Markets", "Quiet places", "Long trains"];
+const filters = ["全部", "海边", "城市", "山野", "市集", "安静之地", "长途列车"];
 
 function Explore() {
   return (
@@ -50,14 +50,14 @@ function Explore() {
       <SiteNav />
       <header className="pt-40 pb-12 px-6 text-center max-w-4xl mx-auto">
         <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-charcoal/50">
-          §— The Reading Room
+          §— 阅读室
         </span>
         <h1 className="font-serif text-6xl md:text-8xl mt-4 leading-[0.95]">
-          Wander through<br />
-          <span className="italic text-dusty">other people's</span> memories.
+          漫游于<br />
+          <span className="italic text-dusty">他人</span>的记忆。
         </h1>
         <p className="font-hand text-2xl text-charcoal/60 mt-6 -rotate-1">
-          a feed, but slower
+          一种更慢的信息流
         </p>
       </header>
 

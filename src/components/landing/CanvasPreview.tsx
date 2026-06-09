@@ -7,14 +7,14 @@ export function CanvasPreview() {
       <div className="flex items-end justify-between mb-6">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-charcoal/50">
-            §01 — Infinite Canvas
+            §01 — 无限画布
           </span>
           <h2 className="font-serif text-4xl md:text-5xl italic mt-2">
-            Drag. Tear. Arrange. Repeat.
+            拖动。撕开。排列。重复。
           </h2>
         </div>
         <p className="font-hand text-xl text-dusty hidden md:block max-w-[22ch]">
-          Like Figma met your grandmother's scrapbook.
+          像 Figma 遇上了外婆的剪贴簿。
         </p>
       </div>
 
@@ -27,7 +27,7 @@ export function CanvasPreview() {
           <span className="tape absolute -top-3 left-1/2 -translate-x-1/2 w-14 h-6 rotate-[-3deg] z-10" />
           <div className="w-56 md:w-64 bg-white p-3 pb-10 scrap-shadow border border-charcoal/5 transition-transform group-hover:scale-[1.03] group-hover:rotate-[-2deg]">
             <img src={polaroidTrain} alt="" className="block w-full aspect-square object-cover" />
-            <span className="absolute bottom-3 left-4 font-hand text-lg">Bernina Express, 2024</span>
+            <span className="absolute bottom-3 left-4 font-hand text-lg">伯尔尼纳快线，2024</span>
           </div>
         </div>
 
@@ -36,7 +36,7 @@ export function CanvasPreview() {
           <div className="absolute -top-5 -right-3 z-20 w-16 h-16 rotate-[15deg]">
             <div className="w-full h-full bg-pinkv rounded-full flex items-center justify-center border border-charcoal/10 scrap-shadow">
               <span className="text-[9px] font-bold uppercase tracking-tighter text-charcoal text-center leading-tight">
-                Paris<br />’23
+                巴黎<br />’23
               </span>
             </div>
           </div>
@@ -48,12 +48,12 @@ export function CanvasPreview() {
         {/* Handwritten note + audio */}
         <div className="absolute bottom-[12%] left-[26%] max-w-xs rotate-[-2deg]">
           <p className="font-hand text-[1.6rem] leading-tight text-charcoal/85">
-            “The coffee in Florence tasted like old stories and morning rain.”
+            「佛罗伦萨的咖啡，喝起来像旧故事和清晨的雨。」
           </p>
           <div className="mt-3 flex items-center gap-2">
             <Waveform />
             <span className="text-[10px] font-bold uppercase tracking-widest text-dusty">
-              Audio · 0:12
+              音频 · 0:12
             </span>
           </div>
         </div>
@@ -63,7 +63,7 @@ export function CanvasPreview() {
           <div className="bg-white border border-charcoal/10 rounded-2xl p-4 scrap-shadow space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">
-                AI Layout
+                AI 排版
               </span>
               <span className="size-1.5 rounded-full bg-pinkv animate-pulse" />
             </div>
@@ -76,14 +76,14 @@ export function CanvasPreview() {
               <div className="aspect-square bg-dusty/15 rounded-md" />
             </div>
             <button className="w-full text-left text-xs font-bold text-charcoal flex items-center justify-between">
-              Generate spread <span>→</span>
+              生成版面 <span>→</span>
             </button>
           </div>
         </div>
 
         {/* Toolbar bottom-left */}
         <div className="absolute bottom-6 left-6 bg-white/85 backdrop-blur-md border border-charcoal/10 rounded-full px-3 py-2 flex items-center gap-1 scrap-shadow text-[11px]">
-          {["Photo", "Note", "Map", "Audio", "Sticker"].map((t) => (
+          {["照片", "笔记", "地图", "音频", "贴纸"].map((t) => (
             <span
               key={t}
               className="px-3 py-1.5 rounded-full hover:bg-cream font-semibold text-charcoal/70 cursor-pointer"

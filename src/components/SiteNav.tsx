@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
 
 const links = [
-  { to: "/", label: "Home" },
-  { to: "/explore", label: "Explore" },
-  { to: "/create", label: "Create" },
-  { to: "/collections", label: "Collections" },
-  { to: "/profile", label: "Profile" },
+  { to: "/", label: "首页" },
+  { to: "/explore", label: "探索" },
+  { to: "/create", label: "创作" },
+  { to: "/collections", label: "收藏集" },
+  { to: "/profile", label: "我的" },
 ] as const;
 
 export function SiteNav() {
@@ -32,7 +32,7 @@ export function SiteNav() {
           to="/create"
           className="bg-charcoal text-cream px-5 py-2 rounded-full text-[11px] font-bold uppercase tracking-[0.15em] hover:bg-charcoal/85 hover:scale-[1.02] transition"
         >
-          Start Journaling
+          开始记录
         </Link>
       </div>
     </nav>
