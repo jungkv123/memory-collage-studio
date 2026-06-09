@@ -32,6 +32,8 @@ type Frag = {
   text?: string;
   color?: string;
   tape?: string;
+  aspect?: "square" | "portrait" | "landscape";
+  doodle?: string;
 };
 
 const initial: Frag[] = [
@@ -48,20 +50,103 @@ const initial: Frag[] = [
   { id: 11, kind: "audio", x: 540, y: 700, r: 1, w: 240, text: "海，拉各斯 · 0:10" },
 ];
 
-const tools = [
-  { icon: "🖼", label: "照片" },
-  { icon: "✎", label: "笔记" },
-  { icon: "🗺", label: "地图" },
-  { icon: "♪", label: "音频" },
-  { icon: "✷", label: "贴纸" },
-  { icon: "✂", label: "胶带" },
+const stickerPalette = ["bg-pinkv", "bg-butter", "bg-dusty", "bg-charcoal"];
+const doodlePaths = [
+  "M10 60 Q 40 10 80 50 T 150 40",
+  "M20 20 C 60 80, 100 0, 150 60 S 200 20, 230 50",
+  "M10 50 Q 50 0 90 50 Q 130 100 170 50",
+  "M20 80 L 60 20 L 100 80 L 140 20 L 180 80",
 ];
+const stickerEmojis = ["✿", "★", "☀", "♥", "✈", "☕"];
 
 function Create() {
   const [items, setItems] = useState<Frag[]>(initial);
   const [zoom, setZoom] = useState(0.85);
   const [dragging, setDragging] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
   const offset = useRef({ x: 0, y: 0 });
+  const imgInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+  const nextId = useRef(100);
+
+  const flash = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 1800);
+  };
+
+  const addFragment = (frag: Omit<Frag, "id">) => {
+    const id = nextId.current++;
+    setItems((p) => [...p, { ...frag, id }]);
+    setSelectedId(id);
+  };
+
+  const randPos = () => ({
+    x: 200 + Math.random() * 600,
+    y: 200 + Math.random() * 300,
+    r: Math.round((Math.random() - 0.5) * 16),
+  });
+
+  const handleAddImage = () => imgInputRef.current?.click();
+  const onImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    addFragment({ kind: "photo", ...randPos(), w: 220, src: url, text: "新照片", tape: "tape" });
+    e.target.value = "";
+    flash("已添加照片");
+  };
+
+  const handleAddText = () => {
+    const text = window.prompt("写下一段笔记：", "今天的天空像棉花糖。");
+    if (!text) return;
+    addFragment({ kind: "note", ...randPos(), w: 220, text });
+    flash("已添加笔记");
+  };
+
+  const handleAddDoodle = () => {
+    const path = doodlePaths[Math.floor(Math.random() * doodlePaths.length)];
+    addFragment({ kind: "sticker", ...randPos(), w: 200, doodle: path });
+    flash("已添加涂鸦");
+  };
+
+  const handleAddMusic = () => audioInputRef.current?.click();
+  const onAudioFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    addFragment({ kind: "audio", ...randPos(), w: 240, src: url, text: file.name.replace(/\.[^.]+$/, "") });
+    e.target.value = "";
+    flash("已添加背景音乐");
+  };
+
+  const handleAddSticker = () => {
+    const color = stickerPalette[Math.floor(Math.random() * stickerPalette.length)];
+    const emoji = stickerEmojis[Math.floor(Math.random() * stickerEmojis.length)];
+    addFragment({ kind: "sticker", ...randPos(), w: 90, color, text: emoji });
+    flash("已添加素材");
+  };
+
+  const handleCrop = () => {
+    const target = items.find((i) => i.id === selectedId && i.kind === "photo");
+    if (!target) {
+      flash("先选择一张照片再裁剪");
+      return;
+    }
+    const next: Frag["aspect"] =
+      target.aspect === "portrait" ? "landscape" : target.aspect === "landscape" ? "square" : "portrait";
+    setItems((p) => p.map((i) => (i.id === target.id ? { ...i, aspect: next } : i)));
+    flash("已调整裁剪比例");
+  };
+
+  const tools = [
+    { icon: "🖼", label: "添加图片", onClick: handleAddImage },
+    { icon: "✎", label: "添加文字", onClick: handleAddText },
+    { icon: "🗺", label: "添加涂鸦", onClick: handleAddDoodle },
+    { icon: "♪", label: "添加背景音乐", onClick: handleAddMusic },
+    { icon: "✷", label: "添加素材", onClick: handleAddSticker },
+    { icon: "✂", label: "裁剪图片", onClick: handleCrop },
+  ];
 
   const onDown = (e: React.MouseEvent, id: number) => {
     e.preventDefault();
@@ -69,6 +154,7 @@ function Create() {
     if (!item) return;
     offset.current = { x: e.clientX - item.x * zoom, y: e.clientY - item.y * zoom };
     setDragging(id);
+    setSelectedId(id);
   };
   const onMove = (e: React.MouseEvent) => {
     if (dragging == null) return;
@@ -116,7 +202,7 @@ function Create() {
 
           <div className="absolute inset-0 origin-top-left" style={{ transform: `scale(${zoom})` }}>
             {items.map((it) => (
-              <Fragment key={it.id} it={it} onDown={onDown} />
+              <Fragment key={it.id} it={it} onDown={onDown} selected={selectedId === it.id} />
             ))}
           </div>
 
@@ -126,12 +212,21 @@ function Create() {
               <button
                 key={t.label}
                 title={t.label}
+                onClick={t.onClick}
                 className="size-11 grid place-items-center rounded-xl hover:bg-cream text-lg font-semibold"
               >
                 <span aria-hidden>{t.icon}</span>
               </button>
             ))}
+            <input ref={imgInputRef} type="file" accept="image/*" className="hidden" onChange={onImageFile} />
+            <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={onAudioFile} />
           </div>
+
+          {toast && (
+            <div className="absolute top-5 left-1/2 -translate-x-1/2 bg-charcoal text-cream text-xs px-4 py-2 rounded-full scrap-shadow">
+              {toast}
+            </div>
+          )}
 
           {/* Zoom controls */}
           <div className="absolute bottom-5 left-5 bg-white/85 backdrop-blur-md border border-charcoal/10 rounded-full px-3 py-1.5 flex items-center gap-2 scrap-shadow text-sm">
@@ -184,8 +279,16 @@ function Create() {
   );
 }
 
-function Fragment({ it, onDown }: { it: Frag; onDown: (e: React.MouseEvent, id: number) => void }) {
-  const base = "absolute select-none";
+function Fragment({
+  it,
+  onDown,
+  selected,
+}: {
+  it: Frag;
+  onDown: (e: React.MouseEvent, id: number) => void;
+  selected?: boolean;
+}) {
+  const base = `absolute select-none ${selected ? "ring-2 ring-pinkv ring-offset-2 ring-offset-ivory rounded-md" : ""}`;
   const styleBase: React.CSSProperties = {
     left: it.x,
     top: it.y,
@@ -194,11 +297,13 @@ function Fragment({ it, onDown }: { it: Frag; onDown: (e: React.MouseEvent, id: 
   };
 
   if (it.kind === "photo") {
+    const aspectClass =
+      it.aspect === "portrait" ? "aspect-[3/4]" : it.aspect === "landscape" ? "aspect-[4/3]" : "aspect-square";
     return (
       <div className={`${base}`} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
         <div className="relative bg-white p-2 pb-9 scrap-shadow border border-charcoal/10 cursor-grab">
           {it.tape && <span className={`${it.tape} absolute -top-3 left-1/2 -translate-x-1/2 w-16 h-5 rotate-[-3deg]`} />}
-          <img src={it.src} alt="" draggable={false} className="block w-full aspect-square object-cover" />
+          <img src={it.src} alt="" draggable={false} className={`block w-full ${aspectClass} object-cover`} />
           <span className="absolute bottom-2 left-3 right-3 font-hand text-base">{it.text}</span>
         </div>
       </div>
@@ -212,6 +317,15 @@ function Fragment({ it, onDown }: { it: Frag; onDown: (e: React.MouseEvent, id: 
     );
   }
   if (it.kind === "sticker") {
+    if (it.doodle) {
+      return (
+        <div className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
+          <svg viewBox="0 0 240 100" className="block w-full cursor-grab">
+            <path d={it.doodle} stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" className="text-charcoal" />
+          </svg>
+        </div>
+      );
+    }
     if (it.src) {
       return (
         <div className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
@@ -222,8 +336,8 @@ function Fragment({ it, onDown }: { it: Frag; onDown: (e: React.MouseEvent, id: 
     return (
       <div className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
         <div className={`${it.color} size-full aspect-square rounded-full grid place-items-center border border-charcoal/10 scrap-shadow cursor-grab`}>
-          <span className="text-[10px] font-bold uppercase tracking-tighter text-charcoal text-center leading-tight">
-            里斯本<br />’26
+          <span className="text-xl font-bold text-cream text-center leading-tight">
+            {it.text ?? "里斯本"}
           </span>
         </div>
       </div>
@@ -241,7 +355,17 @@ function Fragment({ it, onDown }: { it: Frag; onDown: (e: React.MouseEvent, id: 
   return (
     <div className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
       <div className="bg-charcoal text-cream rounded-full px-4 py-2 flex items-center gap-3 scrap-shadow cursor-grab">
-        <span className="size-7 rounded-full bg-butter text-charcoal grid place-items-center text-xs">▶</span>
+        <button
+          type="button"
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (it.src) new Audio(it.src).play().catch(() => {});
+          }}
+          className="size-7 rounded-full bg-butter text-charcoal grid place-items-center text-xs"
+        >
+          ▶
+        </button>
         <span className="text-xs font-semibold">{it.text}</span>
       </div>
     </div>
