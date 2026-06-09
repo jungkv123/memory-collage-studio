@@ -5,24 +5,24 @@ import morocco from "@/assets/polaroid-morocco.jpg";
 const journals = [
   {
     img: italy,
-    place: "Cinque Terre, IT",
-    title: "Houses the color of fruit.",
+    place: "五渔村，意大利",
+    title: "像水果般颜色的房子。",
     author: "Clara M.",
     tape: "tape",
     rotate: "-rotate-2",
   },
   {
     img: kyoto,
-    place: "Kyoto, JP",
-    title: "Rain through cedar.",
+    place: "京都，日本",
+    title: "穿过雪松的雨。",
     author: "Kenji S.",
     tape: "tape-pink",
     rotate: "rotate-1 mt-10",
   },
   {
     img: morocco,
-    place: "Marrakesh, MA",
-    title: "Lanterns and saffron dust.",
+    place: "马拉喀什，摩洛哥",
+    title: "灯笼与藏红花的尘。",
     author: "Elena R.",
     tape: "tape-blue",
     rotate: "-rotate-1",
@@ -35,12 +35,12 @@ export function JournalGrid() {
       <div className="flex items-end justify-between mb-12 gap-6">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-charcoal/50">
-            §05 — Featured Journals
+            §05 — 精选日志
           </span>
-          <h2 className="font-serif text-5xl md:text-6xl mt-2 italic">From the archive</h2>
+          <h2 className="font-serif text-5xl md:text-6xl mt-2 italic">来自档案馆</h2>
         </div>
         <p className="font-hand text-2xl text-pinkv max-w-[20ch] hidden md:block -rotate-1">
-          recent stories from the community
+          来自社区的近期故事
         </p>
       </div>
 
@@ -55,7 +55,7 @@ export function JournalGrid() {
                   {j.place}
                 </p>
                 <h3 className="font-serif text-2xl italic leading-tight">{j.title}</h3>
-                <p className="font-hand text-lg text-dusty pt-1">by {j.author}</p>
+                <p className="font-hand text-lg text-dusty pt-1">作者 {j.author}</p>
               </div>
             </div>
           </article>

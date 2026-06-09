@@ -28,7 +28,7 @@ export function Hero() {
         <div className="relative scrap-shadow bg-white p-3 pb-10 border border-charcoal/10">
           <img src={polaroidItaly} alt="" className="block w-full h-auto aspect-square object-cover" />
           <span className="absolute bottom-2 left-3 right-3 font-hand text-lg text-charcoal/80">
-            Cinque Terre, July
+            五渔村，七月
           </span>
           <span className="tape absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-6" />
         </div>
@@ -62,25 +62,23 @@ export function Hero() {
       <div className="relative max-w-5xl mx-auto text-center z-10">
         <span className="inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.3em] text-charcoal/50">
           <span className="h-px w-8 bg-charcoal/30" />
-          Vol. 04 · A Visual Travel Archive
+          第 04 卷 · 一份视觉化的旅行档案
           <span className="h-px w-8 bg-charcoal/30" />
         </span>
 
         <h1 className="mt-8 font-serif text-[3.4rem] sm:text-7xl md:text-[7.5rem] leading-[0.92] tracking-tight text-balance">
-          Travel is not a{" "}
-          <span className="italic text-dusty">timeline</span>.
+          旅行不是一条<span className="italic text-dusty">时间线</span>。
           <br />
-          It's a{" "}
+          它是一幅{" "}
           <span className="relative inline-block">
-            collage
+            拼贴画
             <span className="absolute -bottom-2 left-0 w-full h-2 bg-butter/70 -rotate-1 -z-10" />
           </span>
-          .
+          。
         </h1>
 
         <p className="mt-8 mx-auto max-w-xl text-lg md:text-xl text-charcoal/65 font-light text-pretty">
-          Turn scattered memories into visual stories — tickets, polaroids,
-          maps, and whispered notes, arranged on an infinite canvas.
+          把零散的记忆变成视觉故事——车票、宝丽来、地图与低声的笔记，自由地排列在一张无限画布上。
         </p>
 
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -88,19 +86,19 @@ export function Hero() {
             to="/create"
             className="px-9 py-4 bg-charcoal text-cream rounded-full font-serif text-xl hover:bg-charcoal/85 hover:scale-[1.02] transition flex items-center gap-3"
           >
-            Create Your Journey
+            创作你的旅程
             <span aria-hidden>→</span>
           </Link>
           <Link
             to="/explore"
             className="px-9 py-4 border border-charcoal/15 rounded-full font-serif text-xl hover:bg-white/60 transition"
           >
-            Explore Stories
+            探索故事
           </Link>
         </div>
 
         <p className="font-hand text-2xl text-charcoal/55 mt-10 -rotate-1">
-          P.S. — every fragment is a feeling.
+          附注 — 每一片碎片都是一种感觉。
         </p>
       </div>
     </section>

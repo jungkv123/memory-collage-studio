@@ -1,4 +1,4 @@
-const labels = ["Ocean waves, Lisboa", "Yamanote line, Tokyo", "Souk al-Attarine, Fez", "Café in Trastevere"];
+const labels = ["海浪，里斯本", "山手线，东京", "香料市集，非斯", "特拉斯泰韦雷的咖啡馆"];
 
 export function AudioMemory() {
   return (
@@ -7,20 +7,19 @@ export function AudioMemory() {
       <div className="relative max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-16">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-cream/50">
-            §04 — Audio Memory
+            §04 — 声音记忆
           </span>
           <h2 className="font-serif text-5xl md:text-6xl italic mt-4 leading-tight">
-            Ten seconds<br />of somewhere.
+            某地的<br />十秒钟。
           </h2>
           <p className="text-cream/65 leading-relaxed mt-6 max-w-md">
-            Pin an ambient clip to any fragment — ocean static, a train
-            station, a market at dusk. Press play; the room changes.
+            为任意一片碎片别上一段环境声——海浪的白噪、火车站台、黄昏的市集。按下播放，整个房间都换了味道。
           </p>
           <div className="mt-8 inline-flex items-center gap-3 bg-cream/10 backdrop-blur-sm border border-cream/15 rounded-full pl-2 pr-5 py-2">
             <span className="size-9 rounded-full bg-butter text-charcoal grid place-items-center text-base">
               ▶
             </span>
-            <span className="font-hand text-2xl text-cream">listen to a memory</span>
+            <span className="font-hand text-2xl text-cream">聆听一段记忆</span>
           </div>
         </div>
 
