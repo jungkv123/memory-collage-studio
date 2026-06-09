@@ -66,7 +66,7 @@ export function Hero() {
           <span className="h-px w-8 bg-charcoal/30" />
         </span>
 
-        <h1 className="mt-8 font-serif text-[3.4rem] sm:text-7xl leading-[0.92] tracking-tight text-balance md:text-lg my-[27px]">
+        <h1 className="mt-8 font-serif text-[3.4rem] sm:text-7xl leading-[0.92] tracking-tight text-balance my-[27px] md:text-5xl">
           旅行不是一条<span className="italic text-dusty">时间线</span>。
           <br />
           它是一幅{" "}
