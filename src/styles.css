@@ -10,7 +10,7 @@
  * editorial serif + clean sans + handwritten Caveat.
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Caveat:wght@400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Caveat:wght@400;600;700&family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Ma+Shan+Zheng&display=swap");
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -59,9 +59,9 @@
   --color-dusty: var(--dusty);
   --color-pinkv: var(--pinkv);
   --color-butter: var(--butter);
-  --font-serif: "Cormorant Garamond", "Playfair Display", Georgia, serif;
-  --font-sans: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
-  --font-hand: "Caveat", cursive;
+  --font-serif: "Cormorant Garamond", "Playfair Display", "Noto Serif SC", "Source Han Serif SC", "Songti SC", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", "Inter", "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-hand: "Caveat", "Ma Shan Zheng", "Noto Serif SC", cursive;
 }
 
 :root {
