@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
+import { ImagePlus, Type, Brush, Music, Sticker, Crop } from "lucide-react";
 import { SiteNav } from "@/components/SiteNav";
 import polaroidTrain from "@/assets/polaroid-train.jpg";
 import polaroidItaly from "@/assets/polaroid-italy.jpg";
@@ -140,12 +141,12 @@ function Create() {
   };
 
   const tools = [
-    { icon: "🖼", label: "添加图片", onClick: handleAddImage },
-    { icon: "✎", label: "添加文字", onClick: handleAddText },
-    { icon: "🗺", label: "添加涂鸦", onClick: handleAddDoodle },
-    { icon: "♪", label: "添加背景音乐", onClick: handleAddMusic },
-    { icon: "✷", label: "添加素材", onClick: handleAddSticker },
-    { icon: "✂", label: "裁剪图片", onClick: handleCrop },
+    { Icon: ImagePlus, label: "添加图片", onClick: handleAddImage },
+    { Icon: Type, label: "添加文字", onClick: handleAddText },
+    { Icon: Brush, label: "添加涂鸦", onClick: handleAddDoodle },
+    { Icon: Music, label: "添加背景音乐", onClick: handleAddMusic },
+    { Icon: Sticker, label: "添加素材", onClick: handleAddSticker },
+    { Icon: Crop, label: "裁剪图片", onClick: handleCrop },
   ];
 
   const onDown = (e: React.MouseEvent, id: number) => {
@@ -213,9 +214,9 @@ function Create() {
                 key={t.label}
                 title={t.label}
                 onClick={t.onClick}
-                className="size-11 grid place-items-center rounded-xl hover:bg-cream text-lg font-semibold"
+                className="size-11 grid place-items-center rounded-xl hover:bg-cream text-charcoal/80 hover:text-charcoal transition-colors"
               >
-                <span aria-hidden>{t.icon}</span>
+                <t.Icon className="size-[18px]" strokeWidth={1.6} aria-hidden />
               </button>
             ))}
             <input ref={imgInputRef} type="file" accept="image/*" className="hidden" onChange={onImageFile} />
