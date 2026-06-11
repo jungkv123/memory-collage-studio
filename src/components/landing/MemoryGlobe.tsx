@@ -23,7 +23,7 @@ export function MemoryGlobe() {
           </span>
           <h2 className="font-serif text-5xl md:text-6xl leading-[0.95]">
             你的旅程，<br />
-            <span className="italic text-pinkv">环绕</span>在同一处。
+            环绕在同一处
           </h2>
           <p className="text-charcoal/65 leading-relaxed max-w-md">
             每一本日志都化作宝丽来、贴纸或明信片，围绕着缓缓旋转的记忆球漂浮。悬停一窥，点击坠入故事。
