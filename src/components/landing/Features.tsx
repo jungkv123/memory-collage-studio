@@ -8,8 +8,7 @@ export function Features() {
           §03 — 描绘你的心
         </span>
         <h2 className="font-serif text-5xl md:text-6xl leading-tight">
-          被串联的<br />
-          <span className="italic">记忆。</span>
+          被串联的记忆
         </h2>
         <p className="text-charcoal/65 leading-relaxed max-w-md">
           Fragmented 不只是记录你去过哪里，更呈现你当时的感受。用手绘的路径串起每一张感官快照，拼出一份属于你的情绪地图。
