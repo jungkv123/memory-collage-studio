@@ -381,10 +381,16 @@ function Fragment({
   it,
   onDown,
   selected,
+  onResizeStart,
+  onRotateStart,
+  onDelete,
 }: {
   it: Frag;
   onDown: (e: React.MouseEvent, id: number) => void;
   selected?: boolean;
+  onResizeStart: (e: React.MouseEvent, id: number) => void;
+  onRotateStart: (e: React.MouseEvent, id: number) => void;
+  onDelete: (id: number) => void;
 }) {
   const base = `absolute select-none ${selected ? "ring-2 ring-pinkv ring-offset-2 ring-offset-ivory rounded-md" : ""}`;
   const styleBase: React.CSSProperties = {
@@ -394,64 +400,100 @@ function Fragment({
     transform: `rotate(${it.r}deg)`,
   };
 
+  const Handles = selected ? (
+    <>
+      <button
+        type="button"
+        title="删除"
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(it.id);
+        }}
+        className="absolute -top-3 -right-3 size-6 rounded-full bg-charcoal text-cream grid place-items-center scrap-shadow hover:bg-pinkv hover:text-charcoal z-30"
+      >
+        <X className="size-3" strokeWidth={2.2} />
+      </button>
+      <button
+        type="button"
+        title="旋转"
+        onMouseDown={(e) => onRotateStart(e, it.id)}
+        className="absolute -top-3 -left-3 size-6 rounded-full bg-white border border-charcoal/20 text-charcoal grid place-items-center scrap-shadow cursor-grab z-30"
+      >
+        <RotateCw className="size-3" strokeWidth={2} />
+      </button>
+      <span
+        title="缩放"
+        onMouseDown={(e) => onResizeStart(e, it.id)}
+        className="absolute -bottom-2 -right-2 size-4 bg-white border border-charcoal/40 rounded-sm cursor-se-resize z-30"
+      />
+    </>
+  ) : null;
+
   if (it.kind === "photo") {
     const aspectClass =
       it.aspect === "portrait" ? "aspect-[3/4]" : it.aspect === "landscape" ? "aspect-[4/3]" : "aspect-square";
     return (
-      <div className={`${base}`} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
+      <div data-frag className={`${base}`} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
         <div className="relative bg-white p-2 pb-9 scrap-shadow border border-charcoal/10 cursor-grab">
           {it.tape && <span className={`${it.tape} absolute -top-3 left-1/2 -translate-x-1/2 w-16 h-5 rotate-[-3deg]`} />}
           <img src={it.src} alt="" draggable={false} className={`block w-full ${aspectClass} object-cover`} />
           <span className="absolute bottom-2 left-3 right-3 font-hand text-base">{it.text}</span>
         </div>
+        {Handles}
       </div>
     );
   }
   if (it.kind === "ticket") {
     return (
-      <div className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
+      <div data-frag className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
         <img src={it.src} alt="" draggable={false} className="block w-full scrap-shadow border border-charcoal/10 cursor-grab" />
+        {Handles}
       </div>
     );
   }
   if (it.kind === "sticker") {
     if (it.doodle) {
       return (
-        <div className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
+        <div data-frag className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
           <svg viewBox="0 0 240 100" className="block w-full cursor-grab">
             <path d={it.doodle} stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" className="text-charcoal" />
           </svg>
+          {Handles}
         </div>
       );
     }
     if (it.src) {
       return (
-        <div className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
+        <div data-frag className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
           <img src={it.src} alt="" draggable={false} className="block w-full rounded-md scrap-shadow border border-charcoal/10 cursor-grab" />
+          {Handles}
         </div>
       );
     }
     return (
-      <div className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
+      <div data-frag className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
         <div className={`${it.color} size-full aspect-square rounded-full grid place-items-center border border-charcoal/10 scrap-shadow cursor-grab`}>
           <span className="text-xl font-bold text-cream text-center leading-tight">
             {it.text ?? "里斯本"}
           </span>
         </div>
+        {Handles}
       </div>
     );
   }
   if (it.kind === "note") {
     return (
-      <div className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
+      <div data-frag className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
         <div className="bg-butter/40 border border-charcoal/10 p-4 scrap-shadow cursor-grab">
           <p className="font-hand text-2xl leading-tight">{it.text}</p>
         </div>
+        {Handles}
       </div>
     );
   }
   return (
-    <div className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
+    <div data-frag className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
       <div className="bg-charcoal text-cream rounded-full px-4 py-2 flex items-center gap-3 scrap-shadow cursor-grab">
         <button
           type="button"
@@ -466,6 +508,7 @@ function Fragment({
         </button>
         <span className="text-xs font-semibold">{it.text}</span>
       </div>
+      {Handles}
     </div>
   );
 }
