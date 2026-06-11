@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
-import { ImagePlus, Type, Brush, Music, Sticker, Crop } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ImagePlus, Type, Brush, Music, Sticker, Crop, X, RotateCw } from "lucide-react";
 import { SiteNav } from "@/components/SiteNav";
 import polaroidTrain from "@/assets/polaroid-train.jpg";
 import polaroidItaly from "@/assets/polaroid-italy.jpg";
@@ -70,6 +70,12 @@ function Create() {
   const imgInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const nextId = useRef(100);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const interaction = useRef<
+    | { mode: "resize"; id: number; startX: number; startY: number; startW: number }
+    | { mode: "rotate"; id: number; cx: number; cy: number; startAngle: number; startR: number }
+    | null
+  >(null);
 
   const flash = (msg: string) => {
     setToast(msg);
@@ -158,6 +164,19 @@ function Create() {
     setSelectedId(id);
   };
   const onMove = (e: React.MouseEvent) => {
+    if (interaction.current) {
+      const act = interaction.current;
+      if (act.mode === "resize") {
+        const dx = (e.clientX - act.startX) / zoom;
+        const newW = Math.max(60, act.startW + dx);
+        setItems((prev) => prev.map((i) => (i.id === act.id ? { ...i, w: newW } : i)));
+      } else if (act.mode === "rotate") {
+        const angle = (Math.atan2(e.clientY - act.cy, e.clientX - act.cx) * 180) / Math.PI;
+        const delta = angle - act.startAngle;
+        setItems((prev) => prev.map((i) => (i.id === act.id ? { ...i, r: act.startR + delta } : i)));
+      }
+      return;
+    }
     if (dragging == null) return;
     setItems((prev) =>
       prev.map((i) =>
@@ -167,7 +186,71 @@ function Create() {
       ),
     );
   };
-  const onUp = () => setDragging(null);
+  const onUp = () => {
+    setDragging(null);
+    interaction.current = null;
+  };
+
+  const startResize = (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const it = items.find((i) => i.id === id);
+    if (!it) return;
+    interaction.current = { mode: "resize", id, startX: e.clientX, startY: e.clientY, startW: it.w };
+  };
+
+  const startRotate = (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const it = items.find((i) => i.id === id);
+    const el = (e.currentTarget as HTMLElement).closest("[data-frag]") as HTMLElement | null;
+    if (!it || !el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const startAngle = (Math.atan2(e.clientY - cy, e.clientX - cx) * 180) / Math.PI;
+    interaction.current = { mode: "rotate", id, cx, cy, startAngle, startR: it.r };
+  };
+
+  const deleteItem = (id: number) => {
+    setItems((p) => p.filter((i) => i.id !== id));
+    if (selectedId === id) setSelectedId(null);
+  };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.key === "Delete" || e.key === "Backspace") && selectedId != null) {
+        const target = e.target as HTMLElement;
+        if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return;
+        deleteItem(selectedId);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedId]);
+
+  const onCanvasDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files).filter((f) => f.type.startsWith("image/"));
+    if (!files.length) return;
+    const rect = canvasRef.current?.getBoundingClientRect();
+    files.forEach((file, idx) => {
+      const url = URL.createObjectURL(file);
+      const x = rect ? (e.clientX - rect.left) / zoom - 110 + idx * 20 : 200 + idx * 30;
+      const y = rect ? (e.clientY - rect.top) / zoom - 110 + idx * 20 : 200 + idx * 30;
+      addFragment({
+        kind: "photo",
+        x,
+        y,
+        r: Math.round((Math.random() - 0.5) * 14),
+        w: 220,
+        src: url,
+        text: file.name.replace(/\.[^.]+$/, ""),
+        tape: "tape",
+      });
+    });
+    flash(`已添加 ${files.length} 张照片`);
+  };
 
   return (
     <div className="min-h-screen bg-cream flex flex-col">
@@ -193,17 +276,31 @@ function Create() {
       {/* Canvas */}
       <div className="mt-6 px-6 pb-6 flex-1">
         <div
+          ref={canvasRef}
           className="relative w-full h-[760px] bg-ivory border border-charcoal/10 rounded-[28px] overflow-hidden shadow-inner cursor-grab active:cursor-grabbing"
           onMouseMove={onMove}
           onMouseUp={onUp}
           onMouseLeave={onUp}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={onCanvasDrop}
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setSelectedId(null);
+          }}
         >
           <div className="absolute inset-0 dot-grid opacity-50" />
           <div className="paper-texture absolute inset-0 pointer-events-none" />
 
           <div className="absolute inset-0 origin-top-left" style={{ transform: `scale(${zoom})` }}>
             {items.map((it) => (
-              <Fragment key={it.id} it={it} onDown={onDown} selected={selectedId === it.id} />
+              <Fragment
+                key={it.id}
+                it={it}
+                onDown={onDown}
+                selected={selectedId === it.id}
+                onResizeStart={startResize}
+                onRotateStart={startRotate}
+                onDelete={deleteItem}
+              />
             ))}
           </div>
 
