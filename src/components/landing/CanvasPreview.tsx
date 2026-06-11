@@ -9,8 +9,8 @@ export function CanvasPreview() {
           <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-charcoal/50">
             §01 — 无限画布
           </span>
-          <h2 className="font-serif text-4xl md:text-5xl italic mt-2">
-            拖动。撕开。排列。重复。
+          <h2 className="font-serif text-4xl md:text-5xl italic mt-2 text-balance">
+            拖动 撕开&nbsp; 排列 重复
           </h2>
         </div>
         <p className="font-hand text-xl text-dusty hidden md:block max-w-[22ch]">

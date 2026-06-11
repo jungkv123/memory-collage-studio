@@ -66,15 +66,14 @@ export function Hero() {
           <span className="h-px w-8 bg-charcoal/30" />
         </span>
 
-        <h1 className="mt-8 font-serif text-[3.4rem] sm:text-7xl leading-[0.92] tracking-tight text-balance my-[27px] md:text-8xl">
-          旅行不是一条<span className="italic text-dusty">时间线</span>。
-          <br />
+        <h1 className="mt-8 font-serif text-[3.4rem] sm:text-7xl leading-[0.92] tracking-tight text-balance my-[27px] md:text-8xl whitespace-pre-line">
+          旅行不是一条<span className="italic text-dusty">时间线</span>。{"\n"}
           它是一幅{" "}
           <span className="relative inline-block">
             拼贴画
             <span className="absolute -bottom-2 left-0 w-full h-2 bg-butter/70 -rotate-1 -z-10" />
           </span>
-          。
+          {"\n\n"}
         </h1>
 
         <p className="mt-8 mx-auto max-w-xl text-lg md:text-xl text-charcoal/65 font-light text-pretty">

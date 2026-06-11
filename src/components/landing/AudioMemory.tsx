@@ -10,7 +10,8 @@ export function AudioMemory() {
             §04 — 声音记忆
           </span>
           <h2 className="font-serif text-5xl md:text-6xl italic mt-4 leading-tight">
-            某地的<br />十秒钟。
+            某地的<br />
+            十秒钟
           </h2>
           <p className="text-cream/65 leading-relaxed mt-6 max-w-md">
             为任意一片碎片别上一段环境声——海浪的白噪、火车站台、黄昏的市集。按下播放，整个房间都换了味道。
