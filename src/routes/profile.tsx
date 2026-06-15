@@ -1,11 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
-import italy from "@/assets/polaroid-italy.jpg";
-import kyoto from "@/assets/polaroid-kyoto.jpg";
-import morocco from "@/assets/polaroid-morocco.jpg";
-import train from "@/assets/polaroid-train.jpg";
 import stamps from "@/assets/stamps.jpg";
+import { journals as allJournals, getCities, type Journal } from "@/data/journals";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -19,14 +17,36 @@ export const Route = createFileRoute("/profile")({
   component: Profile,
 });
 
-const journals = [
-  { img: train, title: "慢车，向西", date: "2024 年 6 月" },
-  { img: italy, title: "像水果般颜色的房子", date: "2024 年 7 月" },
-  { img: kyoto, title: "穿过雪松的雨", date: "2024 年 10 月" },
-  { img: morocco, title: "灯笼与藏红花", date: "2025 年 2 月" },
-];
+const TABS = ["日志", "草稿", "收藏", "星球"] as const;
+type Tab = (typeof TABS)[number];
 
 function Profile() {
+  const [tab, setTab] = useState<Tab>("日志");
+  const [journals, setJournals] = useState<Journal[]>(allJournals);
+  const [openCity, setOpenCity] = useState<string | null>(null);
+
+  const published = useMemo(() => journals.filter((j) => j.status === "published"), [journals]);
+  const drafts = useMemo(() => journals.filter((j) => j.status === "draft"), [journals]);
+  const collected = useMemo(() => journals.filter((j) => j.collected), [journals]);
+  const cities = useMemo(() => {
+    const map = new Map<string, Journal[]>();
+    for (const j of journals) {
+      if (j.status !== "published") continue;
+      const list = map.get(j.city) ?? [];
+      list.push(j);
+      map.set(j.city, list);
+    }
+    return Array.from(map, ([city, items]) => ({ city, items }));
+  }, [journals]);
+
+  const deleteDraft = (slug: string) => {
+    if (!window.confirm("删除这份草稿？")) return;
+    setJournals((p) => p.filter((j) => j.slug !== slug));
+  };
+  const removeFromCollection = (slug: string) => {
+    setJournals((p) => p.map((j) => (j.slug === slug ? { ...j, collected: false } : j)));
+  };
+
   return (
     <div className="min-h-screen bg-cream">
       <SiteNav />
@@ -62,30 +82,203 @@ function Profile() {
       </header>
 
       <nav className="max-w-6xl mx-auto px-6 mb-10 flex gap-6 border-b border-charcoal/10 text-sm">
-        {["日志", "草稿", "收藏", "星球"].map((t, i) => (
+        {TABS.map((t) => (
           <button
             key={t}
-            className={`pb-3 font-bold uppercase tracking-[0.2em] text-xs ${i === 0 ? "border-b-2 border-charcoal text-charcoal" : "text-charcoal/40 hover:text-charcoal"}`}
+            onClick={() => setTab(t)}
+            className={`pb-3 font-bold uppercase tracking-[0.2em] text-xs cursor-pointer transition-colors ${
+              tab === t ? "border-b-2 border-charcoal text-charcoal" : "text-charcoal/40 hover:text-charcoal"
+            }`}
           >
             {t}
           </button>
         ))}
       </nav>
 
-      <section className="max-w-6xl mx-auto px-6 grid md:grid-cols-4 gap-8 pb-20">
-        {journals.map((j, i) => (
-          <article
-            key={j.title}
-            className={`bg-white border border-charcoal/10 p-3 pb-8 scrap-shadow ${i % 2 ? "rotate-1" : "-rotate-1"} hover:rotate-0 transition`}
-          >
-            <img src={j.img} alt="" className="block w-full aspect-square object-cover" />
-            <h3 className="font-serif italic text-xl mt-3 leading-tight">{j.title}</h3>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-charcoal/50 mt-1">{j.date}</p>
-          </article>
-        ))}
+      <section className="max-w-6xl mx-auto px-6 pb-20 animate-in fade-in duration-300" key={tab}>
+        {tab === "日志" && <JournalGrid items={published} />}
+
+        {tab === "草稿" && (
+          drafts.length === 0 ? (
+            <EmptyState text="还没有草稿。开始写一段碎片吧。" cta="去创作" to="/create" />
+          ) : (
+            <div className="grid md:grid-cols-4 gap-8">
+              {drafts.map((j, i) => (
+                <article
+                  key={j.slug}
+                  className={`group bg-white border border-charcoal/10 p-3 pb-4 scrap-shadow ${
+                    i % 2 ? "rotate-1" : "-rotate-1"
+                  } hover:rotate-0 transition`}
+                >
+                  <Link to="/journal/$slug" params={{ slug: j.slug }} className="block cursor-pointer">
+                    <img src={j.cover} alt="" className="block w-full aspect-square object-cover opacity-80" />
+                    <h3 className="font-serif italic text-xl mt-3 leading-tight">{j.title}</h3>
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-charcoal/50 mt-1">
+                      草稿 · {j.date}
+                    </p>
+                  </Link>
+                  <div className="mt-3 flex gap-2 text-[10px] uppercase tracking-[0.2em]">
+                    <Link
+                      to="/journal/$slug"
+                      params={{ slug: j.slug }}
+                      className="flex-1 text-center py-1.5 rounded-full bg-charcoal text-cream hover:bg-charcoal/85"
+                    >
+                      继续编辑
+                    </Link>
+                    <button
+                      onClick={() => deleteDraft(j.slug)}
+                      className="flex-1 py-1.5 rounded-full border border-charcoal/15 hover:bg-pinkv/20 cursor-pointer"
+                    >
+                      删除
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )
+        )}
+
+        {tab === "收藏" && (
+          collected.length === 0 ? (
+            <EmptyState text="收藏夹还是空的。" cta="去逛逛" to="/explore" />
+          ) : (
+            <div className="grid md:grid-cols-4 gap-8">
+              {collected.map((j, i) => (
+                <article
+                  key={j.slug}
+                  className={`group bg-white border border-charcoal/10 p-3 pb-4 scrap-shadow ${
+                    i % 2 ? "rotate-1" : "-rotate-1"
+                  } hover:rotate-0 transition`}
+                >
+                  <Link to="/journal/$slug" params={{ slug: j.slug }} className="block cursor-pointer">
+                    <img src={j.cover} alt="" className="block w-full aspect-square object-cover" />
+                    <h3 className="font-serif italic text-xl mt-3 leading-tight">{j.title}</h3>
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-charcoal/50 mt-1">{j.date}</p>
+                  </Link>
+                  <div className="mt-3 flex gap-2 text-[10px] uppercase tracking-[0.2em]">
+                    <Link
+                      to="/journal/$slug"
+                      params={{ slug: j.slug }}
+                      className="flex-1 text-center py-1.5 rounded-full bg-charcoal text-cream hover:bg-charcoal/85"
+                    >
+                      打开
+                    </Link>
+                    <button
+                      onClick={() => removeFromCollection(j.slug)}
+                      className="flex-1 py-1.5 rounded-full border border-charcoal/15 hover:bg-pinkv/20 cursor-pointer"
+                    >
+                      取消收藏
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )
+        )}
+
+        {tab === "星球" && (
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50 mb-6">
+              你的记忆星球 · {cities.length} 颗
+            </p>
+            <div className="flex flex-wrap gap-10 items-center justify-center min-h-[360px] bg-ivory border border-charcoal/10 rounded-[28px] p-10 dot-grid">
+              {cities.map(({ city, items }, i) => (
+                <button
+                  key={city}
+                  onClick={() => setOpenCity(city)}
+                  style={{ animationDelay: `${i * 0.15}s` }}
+                  className="group flex flex-col items-center gap-2 cursor-pointer animate-bob"
+                >
+                  <span
+                    className={`size-24 rounded-full grid place-items-center scrap-shadow border border-charcoal/10 transition-transform group-hover:scale-110 group-hover:-rotate-6 ${
+                      ["bg-pinkv", "bg-butter", "bg-dusty", "bg-charcoal"][i % 4]
+                    }`}
+                  >
+                    <span className="font-serif italic text-cream text-lg">{city}</span>
+                  </span>
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-charcoal/60">
+                    {items.length} 篇日志
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {openCity && (
+              <div
+                className="fixed inset-0 bg-charcoal/40 backdrop-blur-sm z-50 grid place-items-center p-6 animate-in fade-in duration-200"
+                onClick={() => setOpenCity(null)}
+              >
+                <div
+                  className="bg-cream border border-charcoal/10 rounded-2xl p-6 max-w-2xl w-full scrap-shadow"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-baseline justify-between mb-4">
+                    <h3 className="font-serif italic text-3xl">{openCity}</h3>
+                    <button
+                      onClick={() => setOpenCity(null)}
+                      className="text-xs uppercase tracking-[0.2em] text-charcoal/50 hover:text-charcoal cursor-pointer"
+                    >
+                      关闭
+                    </button>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {(cities.find((c) => c.city === openCity)?.items ?? []).map((j) => (
+                      <Link
+                        key={j.slug}
+                        to="/journal/$slug"
+                        params={{ slug: j.slug }}
+                        className="bg-white border border-charcoal/10 p-3 scrap-shadow hover:-rotate-1 transition cursor-pointer"
+                      >
+                        <img src={j.cover} alt="" className="block w-full aspect-[4/3] object-cover" />
+                        <h4 className="font-serif italic text-lg mt-2">{j.title}</h4>
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-charcoal/50">{j.date}</p>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
       <SiteFooter />
+    </div>
+  );
+}
+
+function JournalGrid({ items }: { items: Journal[] }) {
+  if (items.length === 0) return <EmptyState text="还没有发布的日志。" cta="去创作" to="/create" />;
+  return (
+    <div className="grid md:grid-cols-4 gap-8">
+      {items.map((j, i) => (
+        <Link
+          key={j.slug}
+          to="/journal/$slug"
+          params={{ slug: j.slug }}
+          className={`block bg-white border border-charcoal/10 p-3 pb-8 scrap-shadow ${
+            i % 2 ? "rotate-1" : "-rotate-1"
+          } hover:rotate-0 hover:-translate-y-1 transition cursor-pointer`}
+        >
+          <img src={j.cover} alt="" className="block w-full aspect-square object-cover" />
+          <h3 className="font-serif italic text-xl mt-3 leading-tight">{j.title}</h3>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-charcoal/50 mt-1">{j.date}</p>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function EmptyState({ text, cta, to }: { text: string; cta: string; to: string }) {
+  return (
+    <div className="text-center py-20 border border-dashed border-charcoal/15 rounded-[28px]">
+      <p className="font-serif italic text-2xl text-charcoal/60">{text}</p>
+      <Link
+        to={to}
+        className="inline-block mt-6 px-5 py-2 rounded-full bg-charcoal text-cream text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal/85"
+      >
+        {cta}
+      </Link>
     </div>
   );
 }
