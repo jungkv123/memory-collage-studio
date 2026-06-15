@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
-import { getJournalBySlug, journals } from "@/data/journals";
+import { getJournalBySlug, journals, type Journal } from "@/data/journals";
 
 export const Route = createFileRoute("/journal/$slug")({
   loader: ({ params }) => {
@@ -39,7 +39,7 @@ export const Route = createFileRoute("/journal/$slug")({
 });
 
 function JournalDetail() {
-  const { journal: j } = Route.useLoaderData();
+  const { journal: j } = Route.useLoaderData() as { journal: Journal };
 
   const rots = ["-rotate-2", "rotate-1", "-rotate-1", "rotate-2", "-rotate-3", "rotate-3"];
   const related = journals.filter((x) => x.slug !== j.slug && x.status === "published").slice(0, 3);
