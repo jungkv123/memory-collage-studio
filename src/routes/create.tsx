@@ -60,12 +60,77 @@ const doodlePaths = [
 ];
 const stickerEmojis = ["✿", "★", "☀", "♥", "✈", "☕"];
 
+type StickerDef = {
+  id: string;
+  kind: "tape" | "stamp" | "heart" | "star" | "travel";
+  label: string;
+  // visual config
+  color?: string;
+  emoji?: string;
+  tape?: string;
+  w?: number;
+};
+
+const stickerLibrary: { name: string; key: string; items: StickerDef[] }[] = [
+  {
+    name: "胶带",
+    key: "tape",
+    items: [
+      { id: "tape-cream", kind: "tape", label: "奶油胶带", tape: "tape", w: 120 },
+      { id: "tape-pink", kind: "tape", label: "粉色胶带", tape: "tape-pink", w: 120 },
+      { id: "tape-blue", kind: "tape", label: "蓝色胶带", tape: "tape-blue", w: 120 },
+    ],
+  },
+  {
+    name: "邮票",
+    key: "stamp",
+    items: [
+      { id: "stamp-pinkv", kind: "stamp", label: "巴黎邮票", color: "bg-pinkv", emoji: "✦", w: 90 },
+      { id: "stamp-butter", kind: "stamp", label: "罗马邮票", color: "bg-butter", emoji: "☼", w: 90 },
+      { id: "stamp-dusty", kind: "stamp", label: "京都邮票", color: "bg-dusty", emoji: "鳥", w: 90 },
+      { id: "stamp-charcoal", kind: "stamp", label: "夜车邮票", color: "bg-charcoal", emoji: "✺", w: 90 },
+    ],
+  },
+  {
+    name: "爱心",
+    key: "heart",
+    items: [
+      { id: "heart-pink", kind: "heart", label: "粉心", color: "bg-pinkv", emoji: "♥", w: 70 },
+      { id: "heart-butter", kind: "heart", label: "黄心", color: "bg-butter", emoji: "♥", w: 70 },
+      { id: "heart-dusty", kind: "heart", label: "雾心", color: "bg-dusty", emoji: "♥", w: 70 },
+    ],
+  },
+  {
+    name: "星星",
+    key: "star",
+    items: [
+      { id: "star-pink", kind: "star", label: "粉星", color: "bg-pinkv", emoji: "★", w: 70 },
+      { id: "star-butter", kind: "star", label: "金星", color: "bg-butter", emoji: "✦", w: 70 },
+      { id: "star-charcoal", kind: "star", label: "夜星", color: "bg-charcoal", emoji: "✸", w: 70 },
+    ],
+  },
+  {
+    name: "旅行",
+    key: "travel",
+    items: [
+      { id: "tv-plane", kind: "travel", label: "飞机", color: "bg-dusty", emoji: "✈", w: 80 },
+      { id: "tv-coffee", kind: "travel", label: "咖啡", color: "bg-butter", emoji: "☕", w: 80 },
+      { id: "tv-camera", kind: "travel", label: "相机", color: "bg-charcoal", emoji: "📷", w: 80 },
+      { id: "tv-map", kind: "travel", label: "地图", color: "bg-pinkv", emoji: "✺", w: 80 },
+      { id: "tv-sun", kind: "travel", label: "太阳", color: "bg-butter", emoji: "☀", w: 80 },
+      { id: "tv-flower", kind: "travel", label: "花", color: "bg-pinkv", emoji: "✿", w: 80 },
+    ],
+  },
+];
+
 function Create() {
   const [items, setItems] = useState<Frag[]>(initial);
   const [zoom, setZoom] = useState(0.85);
   const [dragging, setDragging] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [showStickers, setShowStickers] = useState(false);
+  const stickerDragRef = useRef<StickerDef | null>(null);
   const offset = useRef({ x: 0, y: 0 });
   const imgInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -128,10 +193,26 @@ function Create() {
   };
 
   const handleAddSticker = () => {
-    const color = stickerPalette[Math.floor(Math.random() * stickerPalette.length)];
-    const emoji = stickerEmojis[Math.floor(Math.random() * stickerEmojis.length)];
-    addFragment({ kind: "sticker", ...randPos(), w: 90, color, text: emoji });
-    flash("已添加素材");
+    setShowStickers((s) => !s);
+  };
+
+  const addStickerToCanvas = (def: StickerDef, pos?: { x: number; y: number }) => {
+    const p = pos ?? randPos();
+    const w = def.w ?? 90;
+    if (def.kind === "tape") {
+      addFragment({ kind: "sticker", x: p.x, y: p.y, r: Math.round((Math.random() - 0.5) * 20), w, tape: def.tape });
+    } else {
+      addFragment({
+        kind: "sticker",
+        x: p.x,
+        y: p.y,
+        r: Math.round((Math.random() - 0.5) * 16),
+        w,
+        color: def.color,
+        text: def.emoji,
+      });
+    }
+    flash(`已添加 ${def.label}`);
   };
 
   const handleCrop = () => {
@@ -231,9 +312,17 @@ function Create() {
 
   const onCanvasDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    const rect = canvasRef.current?.getBoundingClientRect();
+    const sticker = stickerDragRef.current;
+    if (sticker) {
+      const x = rect ? (e.clientX - rect.left) / zoom - (sticker.w ?? 90) / 2 : 300;
+      const y = rect ? (e.clientY - rect.top) / zoom - (sticker.w ?? 90) / 2 : 300;
+      addStickerToCanvas(sticker, { x, y });
+      stickerDragRef.current = null;
+      return;
+    }
     const files = Array.from(e.dataTransfer.files).filter((f) => f.type.startsWith("image/"));
     if (!files.length) return;
-    const rect = canvasRef.current?.getBoundingClientRect();
     files.forEach((file, idx) => {
       const url = URL.createObjectURL(file);
       const x = rect ? (e.clientX - rect.left) / zoom - 110 + idx * 20 : 200 + idx * 30;
