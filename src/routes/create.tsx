@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ImagePlus, Type, Brush, Music, Sticker, Crop, X, RotateCw } from "lucide-react";
+import { ImagePlus, Type, Brush, Music, Sticker, Crop, X, RotateCw, ArrowUp, ArrowDown, Lock, Unlock, Trash2 } from "lucide-react";
 import { SiteNav } from "@/components/SiteNav";
 import polaroidTrain from "@/assets/polaroid-train.jpg";
 import polaroidItaly from "@/assets/polaroid-italy.jpg";
@@ -35,6 +35,7 @@ type Frag = {
   tape?: string;
   aspect?: "square" | "portrait" | "landscape";
   doodle?: string;
+  locked?: boolean;
 };
 
 const initial: Frag[] = [
@@ -240,9 +241,10 @@ function Create() {
     e.preventDefault();
     const item = items.find((i) => i.id === id);
     if (!item) return;
+    setSelectedId(id);
+    if (item.locked) return;
     offset.current = { x: e.clientX - item.x * zoom, y: e.clientY - item.y * zoom };
     setDragging(id);
-    setSelectedId(id);
   };
   const onMove = (e: React.MouseEvent) => {
     if (interaction.current) {
@@ -276,7 +278,7 @@ function Create() {
     e.stopPropagation();
     e.preventDefault();
     const it = items.find((i) => i.id === id);
-    if (!it) return;
+    if (!it || it.locked) return;
     interaction.current = { mode: "resize", id, startX: e.clientX, startY: e.clientY, startW: it.w };
   };
 
@@ -285,7 +287,7 @@ function Create() {
     e.preventDefault();
     const it = items.find((i) => i.id === id);
     const el = (e.currentTarget as HTMLElement).closest("[data-frag]") as HTMLElement | null;
-    if (!it || !el) return;
+    if (!it || !el || it.locked) return;
     const rect = el.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
@@ -294,8 +296,36 @@ function Create() {
   };
 
   const deleteItem = (id: number) => {
-    setItems((p) => p.filter((i) => i.id !== id));
+    setItems((p) => {
+      const t = p.find((i) => i.id === id);
+      if (t?.locked) return p;
+      return p.filter((i) => i.id !== id);
+    });
     if (selectedId === id) setSelectedId(null);
+  };
+
+  const bringForward = (id: number) => {
+    setItems((p) => {
+      const idx = p.findIndex((i) => i.id === id);
+      if (idx < 0 || idx === p.length - 1) return p;
+      const next = p.slice();
+      [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+      return next;
+    });
+  };
+
+  const sendBackward = (id: number) => {
+    setItems((p) => {
+      const idx = p.findIndex((i) => i.id === id);
+      if (idx <= 0) return p;
+      const next = p.slice();
+      [next[idx], next[idx - 1]] = [next[idx - 1], next[idx]];
+      return next;
+    });
+  };
+
+  const toggleLock = (id: number) => {
+    setItems((p) => p.map((i) => (i.id === id ? { ...i, locked: !i.locked } : i)));
   };
 
   useEffect(() => {
@@ -496,14 +526,53 @@ function Create() {
             <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50 mb-2">
               图层 · {items.length}
             </p>
-            <ul className="space-y-1 max-h-40 overflow-auto text-xs">
-              {items.slice().reverse().map((i) => (
-                <li key={i.id} className="flex items-center gap-2 px-2 py-1 rounded hover:bg-cream">
-                  <span className="size-2 rounded-full bg-charcoal/50" />
-                  <span className="capitalize">{i.kind}</span>
-                  <span className="ml-auto text-charcoal/40">#{i.id}</span>
-                </li>
-              ))}
+            <ul className="space-y-1 max-h-56 overflow-auto text-xs">
+              {items.slice().reverse().map((i) => {
+                const isSel = selectedId === i.id;
+                return (
+                  <li
+                    key={i.id}
+                    onClick={() => setSelectedId(i.id)}
+                    className={`group flex items-center gap-1.5 px-2 py-1 rounded cursor-pointer ${
+                      isSel ? "bg-pinkv/20" : "hover:bg-cream"
+                    }`}
+                  >
+                    <span className="size-2 rounded-full bg-charcoal/50 shrink-0" />
+                    <span className="capitalize truncate flex-1">{i.kind}</span>
+                    <button
+                      title="上移一层"
+                      onClick={(e) => { e.stopPropagation(); bringForward(i.id); }}
+                      className="size-5 grid place-items-center rounded hover:bg-white text-charcoal/60 hover:text-charcoal"
+                    >
+                      <ArrowUp className="size-3" strokeWidth={2} />
+                    </button>
+                    <button
+                      title="下移一层"
+                      onClick={(e) => { e.stopPropagation(); sendBackward(i.id); }}
+                      className="size-5 grid place-items-center rounded hover:bg-white text-charcoal/60 hover:text-charcoal"
+                    >
+                      <ArrowDown className="size-3" strokeWidth={2} />
+                    </button>
+                    <button
+                      title={i.locked ? "解锁" : "锁定"}
+                      onClick={(e) => { e.stopPropagation(); toggleLock(i.id); }}
+                      className={`size-5 grid place-items-center rounded hover:bg-white ${
+                        i.locked ? "text-pinkv" : "text-charcoal/60 hover:text-charcoal"
+                      }`}
+                    >
+                      {i.locked ? <Lock className="size-3" strokeWidth={2} /> : <Unlock className="size-3" strokeWidth={2} />}
+                    </button>
+                    <button
+                      title="删除图层"
+                      onClick={(e) => { e.stopPropagation(); deleteItem(i.id); }}
+                      className="size-5 grid place-items-center rounded hover:bg-white text-charcoal/60 hover:text-pinkv disabled:opacity-30"
+                      disabled={i.locked}
+                    >
+                      <Trash2 className="size-3" strokeWidth={2} />
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </div>
