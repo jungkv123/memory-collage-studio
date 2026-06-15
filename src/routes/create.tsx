@@ -647,3 +647,22 @@ function Fragment({
     </div>
   );
 }
+
+function StickerPreview({ def }: { def: StickerDef }) {
+  if (def.kind === "tape") {
+    return <span className={`${def.tape} block w-full h-4 rotate-[-4deg] rounded-sm`} />;
+  }
+  if (def.kind === "stamp") {
+    return (
+      <div className={`${def.color} w-full h-full grid place-items-center border border-charcoal/15`} style={{ borderStyle: "dashed" }}>
+        <span className="text-cream text-lg">{def.emoji}</span>
+      </div>
+    );
+  }
+  // heart / star / travel — circular badge
+  return (
+    <div className={`${def.color} size-10 rounded-full grid place-items-center border border-charcoal/10`}>
+      <span className="text-cream text-base leading-none">{def.emoji}</span>
+    </div>
+  );
+}
