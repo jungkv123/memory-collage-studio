@@ -186,8 +186,8 @@ function Profile() {
                 <button
                   key={city}
                   onClick={() => setOpenCity(city)}
-                  style={{ animationDelay: `${i * 0.15}s` }}
-                  className="group flex flex-col items-center gap-2 cursor-pointer animate-bob"
+                  style={{ animationDelay: `${i * 0.4}s` }}
+                  className="group flex flex-col items-center gap-2 cursor-pointer float-y"
                 >
                   <span
                     className={`size-24 rounded-full grid place-items-center scrap-shadow border border-charcoal/10 transition-transform group-hover:scale-110 group-hover:-rotate-6 ${
