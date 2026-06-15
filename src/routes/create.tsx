@@ -409,6 +409,52 @@ function Create() {
             <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={onAudioFile} />
           </div>
 
+          {/* Sticker panel */}
+          {showStickers && (
+            <div className="absolute top-5 left-20 w-72 bg-white/95 backdrop-blur-md border border-charcoal/10 rounded-2xl p-4 scrap-shadow z-20">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">
+                  贴纸库
+                </span>
+                <button
+                  onClick={() => setShowStickers(false)}
+                  className="size-6 grid place-items-center rounded-full hover:bg-cream text-charcoal/60"
+                >
+                  <X className="size-3.5" strokeWidth={2} />
+                </button>
+              </div>
+              <p className="text-[10px] text-charcoal/50 mb-3 italic">拖到画布上 · 或点击添加</p>
+              <div className="max-h-[460px] overflow-auto pr-1 space-y-4">
+                {stickerLibrary.map((cat) => (
+                  <div key={cat.key}>
+                    <p className="font-serif italic text-sm mb-2 text-charcoal/80">{cat.name}</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {cat.items.map((def) => (
+                        <button
+                          key={def.id}
+                          draggable
+                          onDragStart={(e) => {
+                            stickerDragRef.current = def;
+                            e.dataTransfer.effectAllowed = "copy";
+                            e.dataTransfer.setData("text/plain", def.id);
+                          }}
+                          onDragEnd={() => {
+                            // ref cleared in onCanvasDrop on success
+                          }}
+                          onClick={() => addStickerToCanvas(def)}
+                          title={def.label}
+                          className="aspect-square rounded-lg bg-cream/60 border border-charcoal/10 hover:border-pinkv hover:bg-cream grid place-items-center transition-colors cursor-grab active:cursor-grabbing overflow-hidden p-2"
+                        >
+                          <StickerPreview def={def} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {toast && (
             <div className="absolute top-5 left-1/2 -translate-x-1/2 bg-charcoal text-cream text-xs px-4 py-2 rounded-full scrap-shadow">
               {toast}
