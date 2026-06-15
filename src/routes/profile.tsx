@@ -100,7 +100,7 @@ function Profile() {
 
         {tab === "草稿" && (
           drafts.length === 0 ? (
-            <EmptyState text="还没有草稿。开始写一段碎片吧。" cta="去创作" to="/create" />
+            <EmptyState text="还没有草稿。开始写一段碎片吧。" cta="去创作" toCreate />
           ) : (
             <div className="grid md:grid-cols-4 gap-8">
               {drafts.map((j, i) => (
@@ -140,7 +140,7 @@ function Profile() {
 
         {tab === "收藏" && (
           collected.length === 0 ? (
-            <EmptyState text="收藏夹还是空的。" cta="去逛逛" to="/explore" />
+            <EmptyState text="收藏夹还是空的。" cta="去逛逛" toExplore />
           ) : (
             <div className="grid md:grid-cols-4 gap-8">
               {collected.map((j, i) => (
@@ -248,7 +248,7 @@ function Profile() {
 }
 
 function JournalGrid({ items }: { items: Journal[] }) {
-  if (items.length === 0) return <EmptyState text="还没有发布的日志。" cta="去创作" to="/create" />;
+  if (items.length === 0) return <EmptyState text="还没有发布的日志。" cta="去创作" toCreate />;
   return (
     <div className="grid md:grid-cols-4 gap-8">
       {items.map((j, i) => (
@@ -269,16 +269,24 @@ function JournalGrid({ items }: { items: Journal[] }) {
   );
 }
 
-function EmptyState({ text, cta, to }: { text: string; cta: string; to: string }) {
+function EmptyState({
+  text,
+  cta,
+  toCreate,
+  toExplore,
+}: {
+  text: string;
+  cta: string;
+  toCreate?: boolean;
+  toExplore?: boolean;
+}) {
+  const cls =
+    "inline-block mt-6 px-5 py-2 rounded-full bg-charcoal text-cream text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal/85";
   return (
     <div className="text-center py-20 border border-dashed border-charcoal/15 rounded-[28px]">
       <p className="font-serif italic text-2xl text-charcoal/60">{text}</p>
-      <Link
-        to={to}
-        className="inline-block mt-6 px-5 py-2 rounded-full bg-charcoal text-cream text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal/85"
-      >
-        {cta}
-      </Link>
+      {toCreate && <Link to="/create" className={cls}>{cta}</Link>}
+      {toExplore && <Link to="/explore" className={cls}>{cta}</Link>}
     </div>
   );
 }
