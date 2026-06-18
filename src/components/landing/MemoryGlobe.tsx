@@ -1,16 +1,21 @@
-import polaroidKyoto from "@/assets/polaroid-kyoto.jpg";
-import polaroidItaly from "@/assets/polaroid-italy.jpg";
-import polaroidMorocco from "@/assets/polaroid-morocco.jpg";
-import stamps from "@/assets/stamps.jpg";
-import ticket from "@/assets/ticket-paris.jpg";
+import { Link } from "@tanstack/react-router";
+import { journals } from "@/data/journals";
 
-const orbits = [
-  { src: polaroidKyoto, label: "京都", angle: 0, dist: 230, r: -8 },
-  { src: polaroidItaly, label: "五渔村", angle: 72, dist: 250, r: 6 },
-  { src: polaroidMorocco, label: "马拉喀什", angle: 144, dist: 235, r: -4 },
-  { src: stamps, label: "里斯本", angle: 216, dist: 245, r: 10 },
-  { src: ticket, label: "巴黎", angle: 288, dist: 230, r: -12 },
+const published = journals.filter((j) => j.status === "published");
+const orbitMeta = [
+  { angle: 0, dist: 230, r: -8 },
+  { angle: 72, dist: 250, r: 6 },
+  { angle: 144, dist: 235, r: -4 },
+  { angle: 216, dist: 245, r: 10 },
+  { angle: 288, dist: 230, r: -12 },
 ];
+const orbits = published.map((j, i) => ({
+  slug: j.slug,
+  src: j.cover,
+  label: j.city,
+  title: j.title,
+  ...orbitMeta[i % orbitMeta.length],
+}));
 
 export function MemoryGlobe() {
   return (
@@ -63,20 +68,29 @@ export function MemoryGlobe() {
             const x = Math.cos(rad) * o.dist;
             const y = Math.sin(rad) * o.dist;
             return (
-              <div
+              <Link
                 key={i}
-                className="absolute float-y"
+                to="/journal/$slug"
+                params={{ slug: o.slug }}
+                aria-label={`打开《${o.title}》— ${o.label}`}
+                className="absolute float-y group cursor-pointer"
                 style={{
                   transform: `translate(${x}px, ${y}px)`,
                   ["--r" as string]: `${o.r}deg`,
                   animationDelay: `${i * 0.6}s`,
                 }}
               >
-                <div className="w-28 bg-white p-1.5 pb-5 border border-charcoal/10 scrap-shadow hover:scale-110 transition-transform">
-                  <img src={o.src} alt="" className="block w-full aspect-square object-cover" />
+                <div
+                  className="w-28 bg-white p-1.5 pb-5 border border-charcoal/10 scrap-shadow flicker group-hover:scale-110 group-hover:animation-none transition-transform"
+                  style={{ ["--flicker-delay" as string]: `${i * 0.7}s` }}
+                >
+                  <img src={o.src} alt={o.title} className="block w-full aspect-square object-cover" />
                   <span className="block text-center font-hand text-sm mt-0.5">{o.label}</span>
                 </div>
-              </div>
+                <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 -bottom-7 whitespace-nowrap text-[10px] uppercase tracking-[0.2em] text-charcoal/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                  打开《{o.title}》→
+                </span>
+              </Link>
             );
           })}
         </div>
