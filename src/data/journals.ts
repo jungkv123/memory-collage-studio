@@ -162,3 +162,58 @@ export const getCities = () => {
   }
   return Array.from(map, ([city, items]) => ({ city, items }));
 };
+
+export type Collection = {
+  slug: string;
+  title: string;
+  subtitle: string;
+  cover: string;
+  accent: string;
+  description: string;
+  cities: string[];
+};
+
+export const collections: Collection[] = [
+  {
+    slug: "slow-trains",
+    title: "慢车时光",
+    subtitle: "穿过山口与隧道",
+    cover: train,
+    accent: "bg-dusty/30",
+    description: "把窗外的风景留给慢车——那些只属于车厢里的安静午后。",
+    cities: ["伯尔尼纳"],
+  },
+  {
+    slug: "seaside-afternoons",
+    title: "海边的午后",
+    subtitle: "颜色像水果的城市",
+    cover: italy,
+    accent: "bg-pinkv/30",
+    description: "柠檬冰沙、芒果色的房子、和带咸味的风。",
+    cities: ["五渔村"],
+  },
+  {
+    slug: "rainy-cities",
+    title: "雨中的城市",
+    subtitle: "雪松、杉木、屋檐",
+    cover: kyoto,
+    accent: "bg-butter/40",
+    description: "雨打在叶子上的声音，像有人在数硬币。",
+    cities: ["京都"],
+  },
+  {
+    slug: "markets-and-spices",
+    title: "市集与香料",
+    subtitle: "灯笼、藏红花、夜",
+    cover: morocco,
+    accent: "bg-charcoal/15",
+    description: "夜里灯笼一盏一盏亮起，像有人在数星星。",
+    cities: ["马拉喀什"],
+  },
+];
+
+export const getCollectionBySlug = (slug: string) =>
+  collections.find((c) => c.slug === slug);
+
+export const getJournalsForCollection = (c: Collection) =>
+  journals.filter((j) => j.status === "published" && c.cities.includes(j.city));
