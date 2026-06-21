@@ -787,15 +787,21 @@ function Create() {
       <div className="pt-28 px-6 flex items-center justify-between max-w-7xl mx-auto w-full">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">
-            未命名日志 · 已自动保存
+            {STYLES.find((s) => s.key === chosenStyle)?.name} · {selectedLayout ?? "自定义"} 版面
           </p>
-          <h1 className="font-serif text-3xl italic">里斯本的一个小小春天。</h1>
+          <h1 className="font-serif text-3xl italic">{city || "未命名"}的一段小日子。</h1>
         </div>
         <div className="flex items-center gap-2">
-          <button className="px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] rounded-full border border-charcoal/15 hover:bg-white">
-            预览
+          <button
+            onClick={() => setStep("layout")}
+            className="px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] rounded-full border border-charcoal/15 hover:bg-white"
+          >
+            ← 换版面
           </button>
-          <button className="px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] rounded-full bg-charcoal text-cream hover:bg-charcoal/85">
+          <button
+            onClick={openPublish}
+            className="px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] rounded-full bg-charcoal text-cream hover:bg-charcoal/85"
+          >
             发布
           </button>
         </div>
