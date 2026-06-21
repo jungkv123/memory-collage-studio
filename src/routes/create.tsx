@@ -992,6 +992,88 @@ function Create() {
           </div>
         </div>
       </div>
+
+      {publishOpen && (
+        <div
+          className="fixed inset-0 bg-charcoal/40 backdrop-blur-sm z-50 grid place-items-center p-6"
+          onClick={() => setPublishOpen(false)}
+        >
+          <div
+            className="bg-cream border border-charcoal/10 rounded-2xl p-6 max-w-lg w-full scrap-shadow"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-baseline justify-between mb-4">
+              <h3 className="font-serif italic text-3xl">发布为日志</h3>
+              <button
+                onClick={() => setPublishOpen(false)}
+                className="text-xs uppercase tracking-[0.2em] text-charcoal/50 hover:text-charcoal"
+              >
+                取消
+              </button>
+            </div>
+
+            <label className="block">
+              <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">AI 标题</span>
+              <input
+                value={aiTitle}
+                onChange={(e) => setAiTitle(e.target.value)}
+                placeholder={aiBusy ? "正在生成…" : "标题"}
+                className="mt-2 w-full bg-white border border-charcoal/15 rounded-lg px-3 py-2 font-serif italic text-xl"
+              />
+            </label>
+
+            <label className="block mt-4">
+              <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">AI 旅行短文</span>
+              <textarea
+                value={aiStory}
+                onChange={(e) => setAiStory(e.target.value)}
+                placeholder={aiBusy ? "正在根据照片与风格写一段短文…" : "短文"}
+                rows={5}
+                className="mt-2 w-full bg-white border border-charcoal/15 rounded-lg px-3 py-2 font-hand text-lg leading-snug"
+              />
+            </label>
+
+            <div className="mt-5 flex items-center justify-between">
+              <button
+                onClick={regenerateAI}
+                disabled={aiBusy}
+                className="text-xs uppercase tracking-[0.2em] text-charcoal/60 hover:text-charcoal disabled:opacity-50"
+              >
+                {aiBusy ? "生成中…" : "↻ 重新生成"}
+              </button>
+              <button
+                onClick={publishJournal}
+                disabled={aiBusy || !aiTitle.trim()}
+                className="px-6 py-2.5 rounded-full bg-charcoal text-cream text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal/85 disabled:opacity-40"
+              >
+                保存到我的档案 →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WizardSteps({ step }: { step: Step }) {
+  const labels: { id: Step; label: string }[] = [
+    { id: "upload", label: "01 · 上传" },
+    { id: "style", label: "02 · 风格" },
+    { id: "layout", label: "03 · 版面" },
+    { id: "editor", label: "04 · 编辑" },
+  ];
+  const idx = labels.findIndex((l) => l.id === step);
+  return (
+    <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.25em]">
+      {labels.map((l, i) => (
+        <div key={l.id} className="flex items-center gap-3">
+          <span className={i <= idx ? "text-charcoal" : "text-charcoal/30"}>{l.label}</span>
+          {i < labels.length - 1 && (
+            <span className={`h-px w-6 ${i < idx ? "bg-charcoal" : "bg-charcoal/20"}`} />
+          )}
+        </div>
+      ))}
     </div>
   );
 }
