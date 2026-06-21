@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import stamps from "@/assets/stamps.jpg";
-import { journals as allJournals, getCities, type Journal } from "@/data/journals";
+import { type Journal } from "@/data/journals";
+import { snapshotJournals, subscribeJournals } from "@/data/journals-store";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -22,7 +23,20 @@ type Tab = (typeof TABS)[number];
 
 function Profile() {
   const [tab, setTab] = useState<Tab>("日志");
-  const [journals, setJournals] = useState<Journal[]>(allJournals);
+  const stored = useSyncExternalStore(
+    (cb) => subscribeJournals(cb),
+    () => snapshotJournals(),
+    () => snapshotJournals(),
+  );
+  const [removedSlugs, setRemovedSlugs] = useState<Set<string>>(new Set());
+  const [uncollected, setUncollected] = useState<Set<string>>(new Set());
+  const journals = useMemo<Journal[]>(
+    () =>
+      stored
+        .filter((j) => !removedSlugs.has(j.slug))
+        .map((j) => (uncollected.has(j.slug) ? { ...j, collected: false } : j)),
+    [stored, removedSlugs, uncollected],
+  );
   const [openCity, setOpenCity] = useState<string | null>(null);
 
   const published = useMemo(() => journals.filter((j) => j.status === "published"), [journals]);
@@ -41,10 +55,10 @@ function Profile() {
 
   const deleteDraft = (slug: string) => {
     if (!window.confirm("删除这份草稿？")) return;
-    setJournals((p) => p.filter((j) => j.slug !== slug));
+    setRemovedSlugs((p) => new Set(p).add(slug));
   };
   const removeFromCollection = (slug: string) => {
-    setJournals((p) => p.map((j) => (j.slug === slug ? { ...j, collected: false } : j)));
+    setUncollected((p) => new Set(p).add(slug));
   };
 
   return (

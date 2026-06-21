@@ -1,24 +1,16 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useSyncExternalStore } from "react";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
-import { getJournalBySlug, journals, type Journal } from "@/data/journals";
+import { type Journal } from "@/data/journals";
+import { snapshotJournals, subscribeJournals } from "@/data/journals-store";
 
 export const Route = createFileRoute("/journal/$slug")({
-  loader: ({ params }) => {
-    const journal = getJournalBySlug(params.slug);
-    if (!journal) throw notFound();
-    return { journal };
-  },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          { title: `${loaderData.journal.title} — Fragmented` },
-          { name: "description", content: `${loaderData.journal.city} · ${loaderData.journal.date}` },
-          { property: "og:title", content: `${loaderData.journal.title} — Fragmented` },
-          { property: "og:description", content: `${loaderData.journal.city} · ${loaderData.journal.route}` },
-          { property: "og:image", content: loaderData.journal.cover },
-        ]
-      : [{ title: "日志 — Fragmented" }],
+  head: () => ({
+    meta: [
+      { title: "日志 — Fragmented" },
+      { name: "description", content: "Fragmented 上的旅行日志。" },
+    ],
   }),
   notFoundComponent: () => (
     <div className="min-h-screen bg-cream grid place-items-center px-6">
@@ -39,10 +31,28 @@ export const Route = createFileRoute("/journal/$slug")({
 });
 
 function JournalDetail() {
-  const { journal: j } = Route.useLoaderData() as { journal: Journal };
+  const { slug } = Route.useParams();
+  const journals = useSyncExternalStore(
+    (cb) => subscribeJournals(cb),
+    () => snapshotJournals(),
+    () => snapshotJournals(),
+  );
+  const j = journals.find((x) => x.slug === slug);
+  if (!j) {
+    return (
+      <div className="min-h-screen bg-cream grid place-items-center px-6">
+        <div className="text-center">
+          <p className="font-serif italic text-3xl">这一页还没被写下。</p>
+          <Link to="/profile" className="inline-block mt-6 px-5 py-2 rounded-full bg-charcoal text-cream text-xs uppercase tracking-[0.2em]">
+            回到我的档案
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const rots = ["-rotate-2", "rotate-1", "-rotate-1", "rotate-2", "-rotate-3", "rotate-3"];
-  const related = journals.filter((x) => x.slug !== j.slug && x.status === "published").slice(0, 3);
+  const related: Journal[] = journals.filter((x) => x.slug !== j.slug && x.status === "published").slice(0, 3);
 
   return (
     <div className="min-h-screen bg-cream animate-in fade-in slide-in-from-bottom-2 duration-500">

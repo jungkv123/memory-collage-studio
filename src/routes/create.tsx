@@ -1,7 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ImagePlus, Type, Brush, Music, Sticker, Crop, X, RotateCw, ArrowUp, ArrowDown, Lock, Unlock, Trash2 } from "lucide-react";
 import { SiteNav } from "@/components/SiteNav";
+import { addJournal } from "@/data/journals-store";
+import { generateJournalText } from "@/lib/ai-journal.functions";
 import polaroidTrain from "@/assets/polaroid-train.jpg";
 import polaroidItaly from "@/assets/polaroid-italy.jpg";
 import polaroidKyoto from "@/assets/polaroid-kyoto.jpg";
@@ -60,6 +62,123 @@ const doodlePaths = [
   "M20 80 L 60 20 L 100 80 L 140 20 L 180 80",
 ];
 const stickerEmojis = ["✿", "★", "☀", "♥", "✈", "☕"];
+
+// ────────────────────────────────────────────────────────────
+// AI Studio workflow types
+// ────────────────────────────────────────────────────────────
+type Step = "upload" | "style" | "layout" | "editor";
+
+type StyleKey = "neo-retro" | "y2k" | "film" | "postcard";
+const STYLES: { key: StyleKey; name: string; desc: string; swatch: string }[] = [
+  { key: "neo-retro", name: "Neo Retro", desc: "奶油底色 · 拼贴胶带", swatch: "bg-butter" },
+  { key: "y2k", name: "Y2K Scrapbook", desc: "粉色高光 · 闪贴感", swatch: "bg-pinkv" },
+  { key: "film", name: "Film Diary", desc: "雾蓝胶片 · 手写笔记", swatch: "bg-dusty" },
+  { key: "postcard", name: "Postcard", desc: "炭灰邮戳 · 路线明信片", swatch: "bg-charcoal" },
+];
+
+type Upload = { id: string; url: string; name: string };
+
+type LayoutId = "grid" | "scatter" | "magazine";
+const LAYOUT_DEFS: { id: LayoutId; name: string; hint: string }[] = [
+  { id: "grid", name: "整齐网格", hint: "对称排版，留白克制" },
+  { id: "scatter", name: "随手拼贴", hint: "旋转角度自由，胶带交叠" },
+  { id: "magazine", name: "杂志版面", hint: "焦点照片大幅，配小图与笔记" },
+];
+
+function styleTape(style: StyleKey, i: number): string {
+  const tapes =
+    style === "y2k"
+      ? ["tape-pink", "tape-pink", "tape"]
+      : style === "film"
+        ? ["tape-blue", "tape", "tape-blue"]
+        : style === "postcard"
+          ? ["tape", "tape-blue", "tape"]
+          : ["tape", "tape-pink", "tape-blue"];
+  return tapes[i % tapes.length];
+}
+
+function styleAccentColor(style: StyleKey): string {
+  return style === "y2k"
+    ? "bg-pinkv"
+    : style === "film"
+      ? "bg-dusty"
+      : style === "postcard"
+        ? "bg-charcoal"
+        : "bg-butter";
+}
+
+function buildLayout(uploads: Upload[], style: StyleKey, layout: LayoutId): Frag[] {
+  const items: Frag[] = [];
+  let nid = 1;
+  const accent = styleAccentColor(style);
+  if (uploads.length === 0) return initial;
+
+  if (layout === "grid") {
+    const cols = Math.min(3, Math.max(2, Math.ceil(Math.sqrt(uploads.length))));
+    const w = 230;
+    const gx = 80;
+    const gy = 70;
+    uploads.forEach((u, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      items.push({
+        id: nid++, kind: "photo",
+        x: 120 + col * (w + gx), y: 80 + row * (w + gy),
+        r: ((i % 2 === 0 ? -1 : 1) * 2),
+        w, src: u.url, text: u.name, tape: styleTape(style, i),
+      });
+    });
+  } else if (layout === "scatter") {
+    uploads.forEach((u, i) => {
+      items.push({
+        id: nid++, kind: "photo",
+        x: 80 + (i * 137) % 900,
+        y: 60 + ((i * 211) % 520),
+        r: Math.round(Math.sin(i * 1.7) * 14),
+        w: 200 + ((i * 23) % 80),
+        src: u.url, text: u.name, tape: styleTape(style, i),
+      });
+    });
+  } else {
+    // magazine: first hero, rest smaller
+    uploads.forEach((u, i) => {
+      if (i === 0) {
+        items.push({
+          id: nid++, kind: "photo",
+          x: 100, y: 90, r: -2, w: 420,
+          src: u.url, text: u.name, tape: styleTape(style, i), aspect: "landscape",
+        });
+      } else {
+        const col = (i - 1) % 2;
+        const row = Math.floor((i - 1) / 2);
+        items.push({
+          id: nid++, kind: "photo",
+          x: 580 + col * 240, y: 90 + row * 260,
+          r: col === 0 ? 3 : -3, w: 210,
+          src: u.url, text: u.name, tape: styleTape(style, i),
+        });
+      }
+    });
+  }
+
+  // Sprinkle one accent sticker per layout
+  items.push({
+    id: nid++, kind: "sticker",
+    x: 60, y: 600, r: -8, w: 80,
+    color: accent, text: style === "y2k" ? "★" : style === "film" ? "✺" : style === "postcard" ? "✈" : "☀",
+  });
+  return items;
+}
+
+function slugify(s: string) {
+  return (
+    s
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}]+/gu, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 40) || `journal-${Date.now()}`
+  );
+}
 
 type StickerDef = {
   id: string;
@@ -125,6 +244,22 @@ const stickerLibrary: { name: string; key: string; items: StickerDef[] }[] = [
 ];
 
 function Create() {
+  const navigate = useNavigate();
+
+  // Wizard state
+  const [step, setStep] = useState<Step>("upload");
+  const [uploads, setUploads] = useState<Upload[]>([]);
+  const [city, setCity] = useState("");
+  const [hints, setHints] = useState("");
+  const [chosenStyle, setChosenStyle] = useState<StyleKey>("neo-retro");
+  const [selectedLayout, setSelectedLayout] = useState<LayoutId | null>(null);
+
+  // Publish modal state
+  const [publishOpen, setPublishOpen] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiTitle, setAiTitle] = useState("");
+  const [aiStory, setAiStory] = useState("");
+
   const [items, setItems] = useState<Frag[]>(initial);
   const [zoom, setZoom] = useState(0.85);
   const [dragging, setDragging] = useState<number | null>(null);
@@ -146,6 +281,101 @@ function Create() {
   const flash = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 1800);
+  };
+
+  // Layout previews are deterministic for the chosen style + uploads
+  const layoutPreviews = useMemo(
+    () => LAYOUT_DEFS.map((l) => ({ ...l, frags: buildLayout(uploads, chosenStyle, l.id) })),
+    [uploads, chosenStyle],
+  );
+
+  const onWizardFiles = (files: FileList | null) => {
+    if (!files) return;
+    const next: Upload[] = [];
+    Array.from(files).forEach((f) => {
+      if (!f.type.startsWith("image/")) return;
+      next.push({ id: `${Date.now()}-${Math.random()}`, url: URL.createObjectURL(f), name: f.name.replace(/\.[^.]+$/, "") });
+    });
+    if (next.length) setUploads((p) => [...p, ...next]);
+  };
+
+  const removeUpload = (id: string) => setUploads((p) => p.filter((u) => u.id !== id));
+
+  const openInEditor = (layoutId: LayoutId) => {
+    setSelectedLayout(layoutId);
+    const built = buildLayout(uploads, chosenStyle, layoutId);
+    setItems(built);
+    nextId.current = Math.max(100, ...built.map((b) => b.id)) + 1;
+    setStep("editor");
+  };
+
+  const openPublish = async () => {
+    setPublishOpen(true);
+    setAiBusy(true);
+    setAiTitle("");
+    setAiStory("");
+    try {
+      const res = await generateJournalText({
+        data: {
+          style: STYLES.find((s) => s.key === chosenStyle)?.name ?? chosenStyle,
+          city,
+          hints,
+          photoCount: items.filter((i) => i.kind === "photo").length,
+        },
+      });
+      setAiTitle(res.title);
+      setAiStory(res.story);
+    } catch {
+      setAiTitle(city ? `${city}的一段小日子` : "未命名的一段小日子");
+      setAiStory("这次旅行的细节，会在再次翻看照片时慢慢回来。");
+    } finally {
+      setAiBusy(false);
+    }
+  };
+
+  const regenerateAI = async () => {
+    setAiBusy(true);
+    try {
+      const res = await generateJournalText({
+        data: {
+          style: STYLES.find((s) => s.key === chosenStyle)?.name ?? chosenStyle,
+          city,
+          hints,
+          photoCount: items.filter((i) => i.kind === "photo").length,
+        },
+      });
+      setAiTitle(res.title);
+      setAiStory(res.story);
+    } finally {
+      setAiBusy(false);
+    }
+  };
+
+  const publishJournal = () => {
+    const title = aiTitle.trim() || (city ? `${city}的一段小日子` : "未命名的旅行");
+    const slug = slugify(title);
+    const photos = items.filter((i) => i.kind === "photo");
+    const notes = items.filter((i) => i.kind === "note");
+    const stickers = items.filter((i) => i.kind === "sticker" && (i.text || i.color));
+    const cover = photos[0]?.src ?? uploads[0]?.url ?? polaroidTrain;
+    const accent = styleAccentColor(chosenStyle);
+    addJournal({
+      slug,
+      title,
+      date: new Date().toLocaleDateString("zh-CN", { year: "numeric", month: "long" }),
+      city: city || "未命名的城市",
+      cover,
+      route: city || "—",
+      photos: photos.map((p) => ({ src: p.src!, caption: p.text, tape: p.tape })),
+      notes: notes.length
+        ? notes.map((n) => ({ text: n.text ?? "", color: "bg-butter/40" }))
+        : [{ text: aiStory, color: "bg-butter/40" }],
+      stickers: stickers.slice(0, 6).map((s) => ({ emoji: s.text ?? "✦", color: s.color ?? accent })),
+      status: "published",
+    });
+    setPublishOpen(false);
+    flash("已发布到我的档案");
+    setTimeout(() => navigate({ to: "/profile" }), 600);
   };
 
   const addFragment = (frag: Omit<Frag, "id">) => {
@@ -371,6 +601,185 @@ function Create() {
     flash(`已添加 ${files.length} 张照片`);
   };
 
+  // ────────────────────────────────────────────────────────────
+  // Wizard pre-editor screens
+  // ────────────────────────────────────────────────────────────
+  if (step !== "editor") {
+    return (
+      <div className="min-h-screen bg-cream">
+        <SiteNav />
+        <div className="pt-32 pb-20 px-6 max-w-5xl mx-auto">
+          <WizardSteps step={step} />
+
+          {step === "upload" && (
+            <section className="mt-10">
+              <h1 className="font-serif text-5xl italic">先上传一些照片与素材。</h1>
+              <p className="text-charcoal/60 mt-3">支持拖拽多张图片。可以选填城市与几句备忘。</p>
+              <div
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  onWizardFiles(e.dataTransfer.files);
+                }}
+                className="mt-8 border-2 border-dashed border-charcoal/20 rounded-[28px] p-12 text-center bg-ivory hover:border-pinkv transition-colors"
+              >
+                <ImagePlus className="mx-auto size-10 text-charcoal/50" strokeWidth={1.4} />
+                <p className="font-serif italic text-2xl mt-3">把照片拖到这里</p>
+                <p className="text-xs text-charcoal/50 mt-1">或者</p>
+                <label className="inline-block mt-3 cursor-pointer px-5 py-2 rounded-full bg-charcoal text-cream text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal/85">
+                  选择文件
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => onWizardFiles(e.target.files)}
+                  />
+                </label>
+              </div>
+
+              {uploads.length > 0 && (
+                <div className="mt-6 grid grid-cols-4 sm:grid-cols-6 gap-3">
+                  {uploads.map((u) => (
+                    <div key={u.id} className="relative group aspect-square">
+                      <img src={u.url} alt={u.name} className="block w-full h-full object-cover rounded-md border border-charcoal/10 scrap-shadow" />
+                      <button
+                        onClick={() => removeUpload(u.id)}
+                        className="absolute -top-2 -right-2 size-6 rounded-full bg-charcoal text-cream grid place-items-center opacity-0 group-hover:opacity-100"
+                        aria-label="移除"
+                      >
+                        <X className="size-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-8 grid sm:grid-cols-2 gap-4">
+                <label className="block">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">城市 / 地点</span>
+                  <input
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="例如：里斯本"
+                    className="mt-2 w-full bg-white border border-charcoal/15 rounded-lg px-3 py-2 font-serif italic text-lg"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">几句关键词（可选）</span>
+                  <input
+                    value={hints}
+                    onChange={(e) => setHints(e.target.value)}
+                    placeholder="例如：海风、柠檬冰沙、慢车"
+                    className="mt-2 w-full bg-white border border-charcoal/15 rounded-lg px-3 py-2"
+                  />
+                </label>
+              </div>
+
+              <div className="mt-10 flex justify-end">
+                <button
+                  disabled={uploads.length === 0}
+                  onClick={() => setStep("style")}
+                  className="px-6 py-2.5 rounded-full bg-charcoal text-cream text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal/85 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  下一步：选择风格 →
+                </button>
+              </div>
+            </section>
+          )}
+
+          {step === "style" && (
+            <section className="mt-10">
+              <h1 className="font-serif text-5xl italic">挑一种视觉风格。</h1>
+              <p className="text-charcoal/60 mt-3">这会决定胶带颜色、贴纸与版面气质。</p>
+              <div className="mt-8 grid sm:grid-cols-2 gap-5">
+                {STYLES.map((s) => {
+                  const active = chosenStyle === s.key;
+                  return (
+                    <button
+                      key={s.key}
+                      onClick={() => setChosenStyle(s.key)}
+                      className={`text-left bg-white border ${active ? "border-charcoal" : "border-charcoal/10"} rounded-2xl p-5 scrap-shadow transition hover:-translate-y-0.5`}
+                    >
+                      <div className={`${s.swatch} size-12 rounded-full border border-charcoal/15`} />
+                      <p className="font-serif italic text-2xl mt-3">{s.name}</p>
+                      <p className="text-sm text-charcoal/60 mt-1">{s.desc}</p>
+                      {active && (
+                        <p className="mt-3 text-[10px] uppercase tracking-[0.25em] text-pinkv font-bold">已选择 ✦</p>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="mt-10 flex justify-between">
+                <button onClick={() => setStep("upload")} className="text-xs uppercase tracking-[0.2em] text-charcoal/60 hover:text-charcoal">
+                  ← 返回
+                </button>
+                <button
+                  onClick={() => setStep("layout")}
+                  className="px-6 py-2.5 rounded-full bg-charcoal text-cream text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal/85"
+                >
+                  下一步：生成版面 →
+                </button>
+              </div>
+            </section>
+          )}
+
+          {step === "layout" && (
+            <section className="mt-10">
+              <h1 className="font-serif text-5xl italic">三种排版预览。</h1>
+              <p className="text-charcoal/60 mt-3">选择一个进入编辑器自由调整。</p>
+              <div className="mt-8 grid md:grid-cols-3 gap-6">
+                {layoutPreviews.map((lp) => (
+                  <button
+                    key={lp.id}
+                    onClick={() => openInEditor(lp.id)}
+                    className="group text-left bg-white border border-charcoal/10 rounded-2xl p-3 scrap-shadow hover:-translate-y-1 transition cursor-pointer"
+                  >
+                    <div className="relative w-full aspect-[4/3] bg-ivory rounded-lg overflow-hidden border border-charcoal/10">
+                      <div className="dot-grid absolute inset-0 opacity-40" />
+                      <div className="absolute inset-0 origin-top-left" style={{ transform: "scale(0.25)" }}>
+                        {lp.frags.map((it) =>
+                          it.kind === "photo" && it.src ? (
+                            <div
+                              key={it.id}
+                              className="absolute bg-white p-1 border border-charcoal/10 scrap-shadow"
+                              style={{ left: it.x, top: it.y, width: it.w, transform: `rotate(${it.r}deg)` }}
+                            >
+                              <img src={it.src} alt="" className="block w-full aspect-square object-cover" />
+                            </div>
+                          ) : it.kind === "sticker" ? (
+                            <div
+                              key={it.id}
+                              className={`absolute ${it.color ?? "bg-pinkv"} rounded-full grid place-items-center border border-charcoal/10`}
+                              style={{ left: it.x, top: it.y, width: it.w, height: it.w, transform: `rotate(${it.r}deg)` }}
+                            >
+                              <span className="text-cream text-xl">{it.text}</span>
+                            </div>
+                          ) : null,
+                        )}
+                      </div>
+                    </div>
+                    <p className="font-serif italic text-xl mt-3">{lp.name}</p>
+                    <p className="text-xs text-charcoal/60 mt-1">{lp.hint}</p>
+                    <p className="mt-3 text-[10px] uppercase tracking-[0.25em] text-charcoal/50 group-hover:text-pinkv">
+                      打开此版面 →
+                    </p>
+                  </button>
+                ))}
+              </div>
+              <div className="mt-10 flex justify-between">
+                <button onClick={() => setStep("style")} className="text-xs uppercase tracking-[0.2em] text-charcoal/60 hover:text-charcoal">
+                  ← 返回
+                </button>
+              </div>
+            </section>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-cream flex flex-col">
       <SiteNav />
@@ -378,15 +787,21 @@ function Create() {
       <div className="pt-28 px-6 flex items-center justify-between max-w-7xl mx-auto w-full">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">
-            未命名日志 · 已自动保存
+            {STYLES.find((s) => s.key === chosenStyle)?.name} · {selectedLayout ?? "自定义"} 版面
           </p>
-          <h1 className="font-serif text-3xl italic">里斯本的一个小小春天。</h1>
+          <h1 className="font-serif text-3xl italic">{city || "未命名"}的一段小日子。</h1>
         </div>
         <div className="flex items-center gap-2">
-          <button className="px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] rounded-full border border-charcoal/15 hover:bg-white">
-            预览
+          <button
+            onClick={() => setStep("layout")}
+            className="px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] rounded-full border border-charcoal/15 hover:bg-white"
+          >
+            ← 换版面
           </button>
-          <button className="px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] rounded-full bg-charcoal text-cream hover:bg-charcoal/85">
+          <button
+            onClick={openPublish}
+            className="px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] rounded-full bg-charcoal text-cream hover:bg-charcoal/85"
+          >
             发布
           </button>
         </div>
@@ -577,6 +992,88 @@ function Create() {
           </div>
         </div>
       </div>
+
+      {publishOpen && (
+        <div
+          className="fixed inset-0 bg-charcoal/40 backdrop-blur-sm z-50 grid place-items-center p-6"
+          onClick={() => setPublishOpen(false)}
+        >
+          <div
+            className="bg-cream border border-charcoal/10 rounded-2xl p-6 max-w-lg w-full scrap-shadow"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-baseline justify-between mb-4">
+              <h3 className="font-serif italic text-3xl">发布为日志</h3>
+              <button
+                onClick={() => setPublishOpen(false)}
+                className="text-xs uppercase tracking-[0.2em] text-charcoal/50 hover:text-charcoal"
+              >
+                取消
+              </button>
+            </div>
+
+            <label className="block">
+              <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">AI 标题</span>
+              <input
+                value={aiTitle}
+                onChange={(e) => setAiTitle(e.target.value)}
+                placeholder={aiBusy ? "正在生成…" : "标题"}
+                className="mt-2 w-full bg-white border border-charcoal/15 rounded-lg px-3 py-2 font-serif italic text-xl"
+              />
+            </label>
+
+            <label className="block mt-4">
+              <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">AI 旅行短文</span>
+              <textarea
+                value={aiStory}
+                onChange={(e) => setAiStory(e.target.value)}
+                placeholder={aiBusy ? "正在根据照片与风格写一段短文…" : "短文"}
+                rows={5}
+                className="mt-2 w-full bg-white border border-charcoal/15 rounded-lg px-3 py-2 font-hand text-lg leading-snug"
+              />
+            </label>
+
+            <div className="mt-5 flex items-center justify-between">
+              <button
+                onClick={regenerateAI}
+                disabled={aiBusy}
+                className="text-xs uppercase tracking-[0.2em] text-charcoal/60 hover:text-charcoal disabled:opacity-50"
+              >
+                {aiBusy ? "生成中…" : "↻ 重新生成"}
+              </button>
+              <button
+                onClick={publishJournal}
+                disabled={aiBusy || !aiTitle.trim()}
+                className="px-6 py-2.5 rounded-full bg-charcoal text-cream text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal/85 disabled:opacity-40"
+              >
+                保存到我的档案 →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WizardSteps({ step }: { step: Step }) {
+  const labels: { id: Step; label: string }[] = [
+    { id: "upload", label: "01 · 上传" },
+    { id: "style", label: "02 · 风格" },
+    { id: "layout", label: "03 · 版面" },
+    { id: "editor", label: "04 · 编辑" },
+  ];
+  const idx = labels.findIndex((l) => l.id === step);
+  return (
+    <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.25em]">
+      {labels.map((l, i) => (
+        <div key={l.id} className="flex items-center gap-3">
+          <span className={i <= idx ? "text-charcoal" : "text-charcoal/30"}>{l.label}</span>
+          {i < labels.length - 1 && (
+            <span className={`h-px w-6 ${i < idx ? "bg-charcoal" : "bg-charcoal/20"}`} />
+          )}
+        </div>
+      ))}
     </div>
   );
 }
