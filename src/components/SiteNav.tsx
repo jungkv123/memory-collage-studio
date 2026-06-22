@@ -4,6 +4,7 @@ const links = [
   { to: "/", label: "首页" },
   { to: "/explore", label: "探索" },
   { to: "/create", label: "创作" },
+  { to: "/calendar", label: "日历" },
   { to: "/collections", label: "收藏集" },
   { to: "/profile", label: "我的" },
 ] as const;
