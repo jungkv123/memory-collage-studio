@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "memory-collage",
+      "version": "0.1.0",
+      "title": "Memory Collage"
+    },
+    "tools": [
+      {
+        "name": "list_journals",
+        "title": "List travel journals",
+        "description": "List the travel journals in Memory Collage, optionally filtered by city or status (published/draft/collected).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "city": {
+              "description": "Filter by city name, e.g. 京都.",
+              "type": "string"
+            },
+            "status": {
+              "description": "Filter by journal status.",
+              "type": "string",
+              "enum": [
+                "published",
+                "draft",
+                "collected"
+              ]
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_journal",
+        "title": "Get a travel journal",
+        "description": "Get the full content of one travel journal by its slug, including notes, photo captions, stickers and audio clips.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Journal slug, e.g. slow-train-west."
+            }
+          },
+          "required": [
+            "slug"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_cities",
+        "title": "List visited cities",
+        "description": "List every city that has published journals in Memory Collage, with the journal count and slugs for each.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
