@@ -998,6 +998,22 @@ function Create() {
         </div>
       </div>
 
+      {aiStudioOpen && (
+        <AiLayoutStudio
+          items={items}
+          onClose={() => setAiStudioOpen(false)}
+          onApply={(frags) => {
+            const ids = new Set(frags.map((f) => f.id));
+            setItems((prev) => [
+              ...prev.filter((p) => !ids.has(p.id)),
+              ...(frags as Frag[]),
+            ]);
+            setAiStudioOpen(false);
+            flash("已套用 AI 版面");
+          }}
+        />
+      )}
+
       {publishOpen && (
         <div
           className="fixed inset-0 bg-charcoal/40 backdrop-blur-sm z-50 grid place-items-center p-6"
