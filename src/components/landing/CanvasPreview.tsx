@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import polaroidTrain from "@/assets/polaroid-train.jpg";
 import ticket from "@/assets/ticket-paris.jpg";
 
@@ -75,9 +76,12 @@ export function CanvasPreview() {
               <div className="aspect-square bg-ivory border border-charcoal/10 rounded-md" />
               <div className="aspect-square bg-dusty/15 rounded-md" />
             </div>
-            <button className="w-full text-left text-xs font-bold text-charcoal flex items-center justify-between">
+            <Link
+              to="/create"
+              className="w-full text-left text-xs font-bold text-charcoal flex items-center justify-between"
+            >
               生成版面 <span>→</span>
-            </button>
+            </Link>
           </div>
         </div>
 
