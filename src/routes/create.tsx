@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ImagePlus, Type, Brush, Music, Sticker, Crop, X, RotateCw, ArrowUp, ArrowDown, Lock, Unlock, Trash2 } from "lucide-react";
 import { SiteNav } from "@/components/SiteNav";
+import { AiLayoutStudio } from "@/components/create/AiLayoutStudio";
 import { addJournal } from "@/data/journals-store";
 import { generateJournalText } from "@/lib/ai-journal.functions";
 import polaroidTrain from "@/assets/polaroid-train.jpg";
@@ -266,6 +267,7 @@ function Create() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [showStickers, setShowStickers] = useState(false);
+  const [aiStudioOpen, setAiStudioOpen] = useState(false);
   const stickerDragRef = useRef<StickerDef | null>(null);
   const offset = useRef({ x: 0, y: 0 });
   const imgInputRef = useRef<HTMLInputElement>(null);
@@ -922,7 +924,7 @@ function Create() {
               <span className="size-1.5 rounded-full bg-pinkv animate-pulse" />
             </div>
             <p className="font-serif italic text-lg mt-3 leading-snug">
-              要把这 11 片碎片排成一篇杂志版面吗？
+              要把这 {items.length} 片碎片排成一篇杂志版面吗？
             </p>
             <div className="grid grid-cols-3 gap-1.5 mt-3">
               {[1,2,3,4,5,6].map((i) => (
@@ -931,7 +933,10 @@ function Create() {
                 </div>
               ))}
             </div>
-            <button className="w-full mt-4 bg-charcoal text-cream rounded-full py-2 text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal/85">
+            <button
+              onClick={() => setAiStudioOpen(true)}
+              className="w-full mt-4 bg-charcoal text-cream rounded-full py-2 text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal/85"
+            >
               生成版面
             </button>
           </div>
@@ -992,6 +997,22 @@ function Create() {
           </div>
         </div>
       </div>
+
+      {aiStudioOpen && (
+        <AiLayoutStudio
+          items={items}
+          onClose={() => setAiStudioOpen(false)}
+          onApply={(frags) => {
+            const ids = new Set(frags.map((f) => f.id));
+            setItems((prev) => [
+              ...prev.filter((p) => !ids.has(p.id)),
+              ...(frags as Frag[]),
+            ]);
+            setAiStudioOpen(false);
+            flash("已套用 AI 版面");
+          }}
+        />
+      )}
 
       {publishOpen && (
         <div
