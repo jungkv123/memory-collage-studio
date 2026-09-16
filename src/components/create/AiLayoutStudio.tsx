@@ -1,5 +1,6 @@
-import { useMemo, useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { X, Loader2 } from "lucide-react";
+import { generateAiLayout, type AiLayoutResult, type AiPlan } from "@/lib/ai-layout.functions";
 
 export type StudioFrag = {
   id: number;
@@ -15,29 +16,6 @@ export type StudioFrag = {
   [k: string]: unknown;
 };
 
-type PlanId = "editorial" | "scrapbook" | "postcard";
-
-const PLANS: { id: PlanId; index: string; name: string; why: string }[] = [
-  {
-    id: "editorial",
-    index: "方案 01",
-    name: "Editorial",
-    why: "将照片作为视觉主体，文字作为辅助信息。",
-  },
-  {
-    id: "scrapbook",
-    index: "方案 02",
-    name: "Scrapbook",
-    why: "让碎片自由倾斜交叠，模仿手工剪贴的随意感。",
-  },
-  {
-    id: "postcard",
-    index: "方案 03",
-    name: "Postcard",
-    why: "根据图片与文字的内容关系，尝试建立视觉层次。",
-  },
-];
-
 const KIND_LABEL: Record<string, string> = {
   photo: "照片",
   note: "文字",
@@ -46,91 +24,78 @@ const KIND_LABEL: Record<string, string> = {
   audio: "音频",
 };
 
-const KIND_READS: { kind: string; label: string; read: string }[] = [
-  { kind: "photo", label: "照片", read: "视觉内容" },
-  { kind: "note", label: "文字", read: "信息内容" },
-  { kind: "ticket", label: "地图", read: "地点关系" },
-  { kind: "sticker", label: "贴纸", read: "情绪标记" },
-  { kind: "audio", label: "音频", read: "现场氛围" },
-];
+const CANVAS = { w: 1300, h: 820 };
 
-function arrange(frags: StudioFrag[], plan: PlanId): StudioFrag[] {
-  const photos = frags.filter((f) => f.kind === "photo" || f.kind === "ticket");
-  const rest = frags.filter((f) => f.kind !== "photo" && f.kind !== "ticket");
-  const out: StudioFrag[] = [];
+/** 将画布上的图片压缩成小尺寸 data URL，供 AI 真正"看"图。 */
+async function toThumbDataUrl(src: string, max = 320): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+        const w = Math.max(1, Math.round(img.naturalWidth * scale));
+        const h = Math.max(1, Math.round(img.naturalHeight * scale));
+        const c = document.createElement("canvas");
+        c.width = w;
+        c.height = h;
+        const ctx = c.getContext("2d");
+        if (!ctx) return resolve("");
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(c.toDataURL("image/jpeg", 0.72));
+      } catch {
+        resolve("");
+      }
+    };
+    img.onerror = () => resolve("");
+    img.src = src;
+  });
+}
 
-  if (plan === "editorial") {
-    photos.forEach((f, i) => {
-      const col = i % 2;
-      const row = Math.floor(i / 2);
-      out.push({ ...f, x: 160 + col * 330, y: 110 + row * 320, w: 260, r: col === 0 ? -1.5 : 1.5 });
-    });
-    rest.forEach((f, i) => {
-      out.push({ ...f, x: 860, y: 140 + i * 170, w: f.kind === "sticker" ? 90 : 250, r: i % 2 ? 2 : -2 });
-    });
-  } else if (plan === "scrapbook") {
-    frags.forEach((f, i) => {
-      const col = i % 3;
-      const row = Math.floor(i / 3);
-      out.push({
-        ...f,
-        x: 130 + col * 300 + (row % 2 ? 60 : 0),
-        y: 100 + row * 270,
-        w: f.kind === "sticker" ? 95 : 210 + ((i * 17) % 60),
-        r: ((i % 2 ? 1 : -1) * (4 + (i * 3) % 9)),
-      });
-    });
-  } else {
-    const [hero, ...others] = photos;
-    if (hero) out.push({ ...hero, x: 140, y: 120, w: 420, r: -2 });
-    others.forEach((f, i) => {
-      out.push({ ...f, x: 640 + (i % 2) * 250, y: 130 + Math.floor(i / 2) * 250, w: 220, r: i % 2 ? 3 : -3 });
-    });
-    rest.forEach((f, i) => {
-      out.push({ ...f, x: 160 + i * 260, y: 620, w: f.kind === "sticker" ? 85 : 240, r: i % 2 ? -2 : 2 });
-    });
-  }
-  return out;
+function clamp(v: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, v));
+}
+
+/** 把 AI 返回的版面数据映射回画布碎片 */
+function applyPlan(plan: AiPlan, selected: StudioFrag[]): StudioFrag[] {
+  return selected.map((f) => {
+    const p = plan.placements.find((pl) => String(pl.id) === String(f.id));
+    if (!p) return f;
+    const w = clamp(p.w, f.kind === "sticker" ? 60 : 120, CANVAS.w * 0.5);
+    return {
+      ...f,
+      x: clamp(p.x, 20, CANVAS.w - w - 20),
+      y: clamp(p.y, 20, CANVAS.h - 60),
+      w,
+      r: clamp(p.rotate, -12, 12),
+      z: p.z,
+      aspect: p.crop === "none" ? undefined : p.crop,
+      aiRole: p.role,
+    } as StudioFrag;
+  });
 }
 
 export function AiLayoutStudio({
   items,
+  city = "",
+  style = "",
   onApply,
   onClose,
 }: {
   items: StudioFrag[];
+  city?: string;
+  style?: string;
   onApply: (frags: StudioFrag[]) => void;
   onClose: () => void;
 }) {
   const [stage, setStage] = useState<"pick" | "analyze" | "plans">("pick");
   const [picked, setPicked] = useState<number[]>(() => items.slice(0, 4).map((i) => i.id));
-  const [chosen, setChosen] = useState<PlanId | null>(null);
-  const [progress, setProgress] = useState(0);
+  const [chosen, setChosen] = useState<string | null>(null);
+  const [result, setResult] = useState<AiLayoutResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const selected = useMemo(() => items.filter((i) => picked.includes(i.id)), [items, picked]);
-
-  const kindsPresent = useMemo(
-    () => KIND_READS.filter((k) => selected.some((s) => s.kind === k.kind)),
-    [selected],
-  );
-
-  useEffect(() => {
-    if (stage !== "analyze") return;
-    setProgress(0);
-    const total = kindsPresent.length + 1;
-    const t = setInterval(() => {
-      setProgress((p) => {
-        if (p >= total) {
-          clearInterval(t);
-          return p;
-        }
-        return p + 1;
-      });
-    }, 650);
-    return () => clearInterval(t);
-  }, [stage, kindsPresent.length]);
-
-  const analyzeDone = progress >= kindsPresent.length + 1;
 
   const toggle = (id: number) =>
     setPicked((p) =>
@@ -138,6 +103,39 @@ export function AiLayoutStudio({
     );
 
   const canStart = picked.length >= 3 && picked.length <= 6;
+
+  const runAnalysis = async () => {
+    setStage("analyze");
+    setBusy(true);
+    setError(null);
+    setResult(null);
+    setChosen(null);
+    try {
+      const fragments = await Promise.all(
+        selected.map(async (f) => ({
+          id: String(f.id),
+          kind: f.kind,
+          text: (f.text as string) ?? "",
+          image: f.src ? await toThumbDataUrl(f.src) : "",
+        })),
+      );
+      const res = await generateAiLayout({
+        data: { city, style, canvas: CANVAS, fragments },
+      });
+      if (!res.ok) {
+        setError(res.error ?? "AI 暂时无法生成版面");
+        setResult(null);
+      } else {
+        setResult(res);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "AI 请求出错");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const plans = result?.plans ?? [];
 
   return (
     <div className="fixed inset-0 z-50 bg-charcoal/40 backdrop-blur-sm grid place-items-center p-4 sm:p-8">
@@ -171,7 +169,7 @@ export function AiLayoutStudio({
             <section className="mt-6">
               <h2 className="font-serif italic text-4xl">选择一些你的碎片</h2>
               <p className="text-charcoal/60 mt-2 text-sm leading-relaxed">
-                AI 会根据这些素材，尝试为你生成不同的视觉组合。
+                AI 会真的看这些图片，分析主体、视觉重点与色彩，再为你生成版面。
                 <span className="font-hand text-lg text-dusty ml-2">（请选择 3–6 个）</span>
               </p>
 
@@ -214,7 +212,7 @@ export function AiLayoutStudio({
                 <p className="text-xs text-charcoal/50">已选 {picked.length} / 6</p>
                 <button
                   disabled={!canStart}
-                  onClick={() => setStage("analyze")}
+                  onClick={runAnalysis}
                   className="px-6 py-2.5 rounded-full bg-charcoal text-cream text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal/85 disabled:opacity-40"
                 >
                   开始分析 →
@@ -224,57 +222,86 @@ export function AiLayoutStudio({
           )}
 
           {stage === "analyze" && (
-            <section className="mt-6 max-w-xl">
+            <section className="mt-6 max-w-2xl">
               <h2 className="font-serif italic text-4xl">正在观察你的碎片……</h2>
+
               <ul className="mt-8 space-y-4">
-                {kindsPresent.map((k, i) => (
-                  <li
-                    key={k.kind}
-                    className={`flex items-baseline gap-4 border-b border-dashed border-charcoal/20 pb-3 transition-opacity duration-500 ${
-                      progress > i ? "opacity-100" : "opacity-25"
-                    }`}
-                  >
-                    <span className="font-serif italic text-2xl w-16">{k.label}</span>
-                    <span className="text-charcoal/40">→</span>
-                    <span className="text-sm tracking-wide">{k.read}</span>
-                    <span className="ml-auto font-hand text-lg text-dusty">
-                      {progress > i ? `${selected.filter((s) => s.kind === k.kind).length} 片` : "…"}
-                    </span>
-                  </li>
-                ))}
+                {selected.map((f) => {
+                  const read = result?.reads.find((r) => String(r.id) === String(f.id));
+                  return (
+                    <li
+                      key={f.id}
+                      className={`flex items-center gap-4 border-b border-dashed border-charcoal/20 pb-3 transition-opacity duration-500 ${
+                        read ? "opacity-100" : "opacity-40"
+                      }`}
+                    >
+                      <span className="size-10 bg-ivory border border-charcoal/10 overflow-hidden grid place-items-center shrink-0">
+                        {f.src ? (
+                          <img src={f.src} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-[10px] text-charcoal/50">{KIND_LABEL[f.kind]}</span>
+                        )}
+                      </span>
+                      <span className="font-serif italic text-xl w-14 shrink-0">{KIND_LABEL[f.kind]}</span>
+                      <span className="text-charcoal/40">→</span>
+                      <span className="text-sm tracking-wide">
+                        {read ? `${read.subject} · ${read.focus}` : busy ? "分析中…" : "—"}
+                      </span>
+                      <span className="ml-auto font-hand text-lg text-dusty shrink-0">
+                        {read?.palette ?? "…"}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
 
               <p className="mt-8 font-hand text-2xl text-charcoal/75">
-                AI 正在尝试理解这些碎片之间的关系。
+                {result?.relation || "AI 正在尝试理解这些碎片之间的关系。"}
               </p>
+
+              {error && (
+                <p className="mt-4 text-sm text-pinkv border border-pinkv/40 bg-pinkv/10 p-3 rounded-lg">
+                  {error}
+                </p>
+              )}
 
               <div className="mt-8 flex items-center gap-4">
                 <span
-                  className={`text-[10px] font-bold uppercase tracking-[0.3em] ${
-                    analyzeDone ? "text-charcoal" : "text-charcoal/35"
+                  className={`text-[10px] font-bold uppercase tracking-[0.3em] flex items-center gap-2 ${
+                    result ? "text-charcoal" : "text-charcoal/35"
                   }`}
                 >
-                  {analyzeDone ? "已完成" : "分析中"}
+                  {busy && <Loader2 className="size-3 animate-spin" />}
+                  {busy ? "分析中" : result ? "已完成" : "未完成"}
                 </span>
-                <button
-                  disabled={!analyzeDone}
-                  onClick={() => setStage("plans")}
-                  className="px-6 py-2.5 rounded-full bg-charcoal text-cream text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal/85 disabled:opacity-30"
-                >
-                  继续生成版面 →
-                </button>
+                {error ? (
+                  <button
+                    onClick={runAnalysis}
+                    className="px-6 py-2.5 rounded-full bg-charcoal text-cream text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal/85"
+                  >
+                    重试
+                  </button>
+                ) : (
+                  <button
+                    disabled={!result}
+                    onClick={() => setStage("plans")}
+                    className="px-6 py-2.5 rounded-full bg-charcoal text-cream text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal/85 disabled:opacity-30"
+                  >
+                    继续生成版面 →
+                  </button>
+                )}
               </div>
             </section>
           )}
 
           {stage === "plans" && (
             <section className="mt-6">
-              <h2 className="font-serif italic text-4xl">AI 给出了 3 种可能。</h2>
+              <h2 className="font-serif italic text-4xl">AI 给出了 {plans.length} 种可能。</h2>
               <p className="text-charcoal/60 mt-2 text-sm">你更喜欢哪一种？</p>
 
               <div className="mt-7 grid md:grid-cols-3 gap-5">
-                {PLANS.map((p) => {
-                  const frags = arrange(selected, p.id);
+                {plans.map((p) => {
+                  const frags = applyPlan(p, selected);
                   const on = chosen === p.id;
                   return (
                     <button
@@ -284,34 +311,81 @@ export function AiLayoutStudio({
                         on ? "border-charcoal -translate-y-1" : "border-charcoal/10 hover:-translate-y-0.5"
                       }`}
                     >
-                      <div className="relative w-full aspect-[4/3] bg-ivory overflow-hidden border border-charcoal/10">
+                      <div className="relative w-full aspect-[1300/820] bg-ivory overflow-hidden border border-charcoal/10">
                         <div className="dot-grid absolute inset-0 opacity-40" />
-                        <div className="absolute inset-0 origin-top-left" style={{ transform: "scale(0.22)" }}>
-                          {frags.map((f) => (
+                        <div
+                          className="absolute inset-0 origin-top-left"
+                          style={{ transform: "scale(0.2)", width: CANVAS.w, height: CANVAS.h }}
+                        >
+                          <div
+                            className="absolute border border-dashed border-charcoal/15"
+                            style={{
+                              left: p.whitespace.x,
+                              top: p.whitespace.y,
+                              width: p.whitespace.w,
+                              height: p.whitespace.h,
+                            }}
+                          />
+                          {p.decorations.map((d, i) => (
                             <div
-                              key={f.id}
-                              className="absolute"
-                              style={{ left: f.x, top: f.y, width: f.w, transform: `rotate(${f.r}deg)` }}
-                            >
-                              {f.src ? (
-                                <div className="bg-white p-2 border border-charcoal/10">
-                                  <img src={f.src} alt="" className="block w-full aspect-square object-cover" />
-                                </div>
-                              ) : f.kind === "sticker" ? (
-                                <div
-                                  className={`${f.color ?? "bg-pinkv"} rounded-full border border-charcoal/10`}
-                                  style={{ height: f.w }}
-                                />
-                              ) : (
-                                <div className="bg-butter/50 border border-charcoal/10 p-3 font-hand text-3xl leading-tight">
-                                  {f.text ?? "笔记"}
-                                </div>
-                              )}
-                            </div>
+                              key={i}
+                              className={`absolute ${
+                                d.kind === "line" ? "bg-charcoal/25 h-1" : "bg-dusty/60 rounded-full"
+                              }`}
+                              style={{
+                                left: d.x,
+                                top: d.y,
+                                width: d.w,
+                                height: d.kind === "line" ? 4 : d.w,
+                              }}
+                            />
                           ))}
+                          {frags
+                            .slice()
+                            .sort((a, b) => Number(a.z ?? 0) - Number(b.z ?? 0))
+                            .map((f) => (
+                              <div
+                                key={f.id}
+                                className="absolute"
+                                style={{ left: f.x, top: f.y, width: f.w, transform: `rotate(${f.r}deg)` }}
+                              >
+                                {f.src ? (
+                                  <div className="bg-white p-2 border border-charcoal/10">
+                                    <img
+                                      src={f.src}
+                                      alt=""
+                                      className={`block w-full object-cover ${
+                                        f.aspect === "portrait"
+                                          ? "aspect-[3/4]"
+                                          : f.aspect === "landscape"
+                                            ? "aspect-[4/3]"
+                                            : "aspect-square"
+                                      }`}
+                                    />
+                                  </div>
+                                ) : f.kind === "sticker" ? (
+                                  <div
+                                    className={`${f.color ?? "bg-pinkv"} rounded-full border border-charcoal/10`}
+                                    style={{ height: f.w }}
+                                  />
+                                ) : (
+                                  <div className="bg-butter/50 border border-charcoal/10 p-3 font-hand text-3xl leading-tight">
+                                    {f.text ?? "笔记"}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          <div
+                            className="absolute font-serif italic text-6xl text-charcoal/70"
+                            style={{ left: p.title.x, top: p.title.y }}
+                          >
+                            标题
+                          </div>
                         </div>
                       </div>
-                      <p className="text-[10px] uppercase tracking-[0.3em] text-charcoal/45 mt-3">{p.index}</p>
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-charcoal/45 mt-3">
+                        方案 {String(plans.indexOf(p) + 1).padStart(2, "0")}
+                      </p>
                       <p className="font-serif italic text-2xl">{p.name}</p>
                       <p className="text-[11px] text-charcoal/55 mt-2 leading-relaxed">
                         <span className="italic">为什么这样排列？</span>
@@ -329,7 +403,10 @@ export function AiLayoutStudio({
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <button
                   disabled={!chosen}
-                  onClick={() => chosen && onApply(arrange(selected, chosen))}
+                  onClick={() => {
+                    const plan = plans.find((p) => p.id === chosen);
+                    if (plan) onApply(applyPlan(plan, selected));
+                  }}
                   className="px-6 py-2.5 rounded-full bg-charcoal text-cream text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal/85 disabled:opacity-40"
                 >
                   使用这个方案
@@ -341,7 +418,10 @@ export function AiLayoutStudio({
                   自己修改
                 </button>
                 <button
-                  onClick={() => { setChosen(null); setStage("pick"); }}
+                  onClick={() => {
+                    setChosen(null);
+                    setStage("pick");
+                  }}
                   className="text-xs uppercase tracking-[0.2em] text-charcoal/50 hover:text-charcoal"
                 >
                   ← 重新选择素材
@@ -354,7 +434,7 @@ export function AiLayoutStudio({
           <aside className="mt-10 max-w-sm ml-auto rotate-[-1deg] bg-butter/40 border border-charcoal/15 p-4">
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-charcoal/55">AI 小知识</p>
             <p className="mt-2 text-[13px] leading-relaxed text-charcoal/75">
-              AI 不是真的“懂得”你的旅行记忆。它只能根据你提供的信息，尝试分析和组合这些内容。
+              AI 不是真的"懂得"你的旅行记忆。它只能根据你提供的信息，尝试分析和组合这些内容。
               <br />
               所以，AI 可以帮你生成，但最后的选择仍然由你决定。
             </p>

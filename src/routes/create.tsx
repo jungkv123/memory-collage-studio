@@ -1001,6 +1001,8 @@ function Create() {
       {aiStudioOpen && (
         <AiLayoutStudio
           items={items}
+          city={city}
+          style={STYLES.find((s) => s.key === chosenStyle)?.name ?? chosenStyle}
           onClose={() => setAiStudioOpen(false)}
           onApply={(frags) => {
             const ids = new Set(frags.map((f) => f.id));
