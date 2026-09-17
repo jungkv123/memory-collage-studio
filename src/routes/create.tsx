@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ImagePlus, Type, Brush, Music, Sticker, Crop, X, RotateCw, ArrowUp, ArrowDown, Lock, Unlock, Trash2 } from "lucide-react";
+import { ImagePlus, Type, Brush, Music, Sticker, Crop, X, RotateCw, ArrowUp, ArrowDown, Lock, Unlock, Trash2, Play, Pause } from "lucide-react";
+import { toggleAudio, useAudioPlayer } from "@/lib/audio-player";
 import { SiteNav } from "@/components/SiteNav";
 import { AiLayoutStudio } from "@/components/create/AiLayoutStudio";
 import { addJournal } from "@/data/journals-store";
