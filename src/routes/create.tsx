@@ -1216,23 +1216,71 @@ function Fragment({
       </div>
     );
   }
+  return <AudioFragment it={it} base={base} styleBase={styleBase} onDown={onDown} handles={Handles} />;
+}
+
+function AudioFragment({
+  it,
+  base,
+  styleBase,
+  onDown,
+  handles,
+}: {
+  it: Frag;
+  base: string;
+  styleBase: React.CSSProperties;
+  onDown: (e: React.MouseEvent, id: number) => void;
+  handles: React.ReactNode;
+}) {
+  const player = useAudioPlayer();
+  const audioId = `frag-${it.id}`;
+  const isCurrent = player.id === audioId;
+  const isPlaying = isCurrent && player.playing;
+  const progress = isCurrent ? player.progress : 0;
+
   return (
     <div data-frag className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
-      <div className="bg-charcoal text-cream rounded-full px-4 py-2 flex items-center gap-3 scrap-shadow cursor-grab">
+      <div
+        className={`bg-charcoal text-cream rounded-full px-4 py-2 flex items-center gap-3 scrap-shadow cursor-grab ${
+          isCurrent ? "ring-2 ring-butter/70" : ""
+        }`}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleAudio(audioId, it.src);
+        }}
+      >
         <button
           type="button"
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
-            if (it.src) new Audio(it.src).play().catch(() => {});
+            toggleAudio(audioId, it.src);
           }}
-          className="size-7 rounded-full bg-butter text-charcoal grid place-items-center text-xs"
+          className="size-7 rounded-full bg-butter text-charcoal grid place-items-center"
         >
-          ▶
+          {isPlaying ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}
         </button>
-        <span className="text-xs font-semibold">{it.text}</span>
+        <span className="min-w-0 flex-1">
+          <span className="text-xs font-semibold block truncate">{it.text}</span>
+          <span className="mt-1 flex items-end gap-[2px] h-3">
+            {Array.from({ length: 18 }, (_, i) => {
+              const h = 0.3 + Math.abs(Math.sin(i * 0.8 + it.id)) * 0.7;
+              const played = Math.round(progress * 18);
+              return (
+                <span
+                  key={i}
+                  className={`w-[2px] rounded-full ${
+                    isCurrent && i < played ? "bg-butter" : "bg-cream/40"
+                  } ${isPlaying && i >= played ? "bar bg-cream/80" : ""}`}
+                  style={{ height: `${h * 100}%`, animationDelay: `${i * 0.05}s` }}
+                />
+              );
+            })}
+          </span>
+        </span>
       </div>
-      {Handles}
+      {handles}
     </div>
   );
 }
