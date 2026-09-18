@@ -344,10 +344,6 @@ Prioritize visual storytelling and emotional expression over productivity.
 
 ⸻
 
-如果你想拿去参加课程答辩或者作品集
-
-我建议再加一句（效果会提升很多）：
-
 Design it as an award-winning Awwwards-level experience with smooth animations, parallax effects, GSAP-style transitions, immersive storytelling, and high-end editorial art direction.
 
 This project was built with [Lovable](https://lovable.dev).
