@@ -10,10 +10,14 @@ let hydrated = false;
 function hydrate() {
   if (hydrated) return;
   hydrated = true;
+  rebuildSnapshot();
   if (typeof window === "undefined") return;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (raw) userJournals = JSON.parse(raw) as Journal[];
+    if (raw) {
+      userJournals = JSON.parse(raw) as Journal[];
+      rebuildSnapshot();
+    }
   } catch {
     userJournals = [];
   }
