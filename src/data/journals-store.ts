@@ -32,15 +32,22 @@ function emit() {
   for (const l of listeners) l();
 }
 
+let snapshotCache: Journal[] = [];
+
+function rebuildSnapshot() {
+  snapshotCache = [...userJournals, ...seedJournals];
+}
+
 export function getAllJournals(): Journal[] {
   hydrate();
-  return [...userJournals, ...seedJournals];
+  return snapshotCache;
 }
 
 export function addJournal(j: Journal) {
   hydrate();
   userJournals = [j, ...userJournals.filter((x) => x.slug !== j.slug)];
   persist();
+  rebuildSnapshot();
   emit();
 }
 
