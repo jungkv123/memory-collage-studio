@@ -10,10 +10,14 @@ let hydrated = false;
 function hydrate() {
   if (hydrated) return;
   hydrated = true;
+  rebuildSnapshot();
   if (typeof window === "undefined") return;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (raw) userJournals = JSON.parse(raw) as Journal[];
+    if (raw) {
+      userJournals = JSON.parse(raw) as Journal[];
+      rebuildSnapshot();
+    }
   } catch {
     userJournals = [];
   }
@@ -32,15 +36,22 @@ function emit() {
   for (const l of listeners) l();
 }
 
+let snapshotCache: Journal[] = [];
+
+function rebuildSnapshot() {
+  snapshotCache = [...userJournals, ...seedJournals];
+}
+
 export function getAllJournals(): Journal[] {
   hydrate();
-  return [...userJournals, ...seedJournals];
+  return snapshotCache;
 }
 
 export function addJournal(j: Journal) {
   hydrate();
   userJournals = [j, ...userJournals.filter((x) => x.slug !== j.slug)];
   persist();
+  rebuildSnapshot();
   emit();
 }
 
