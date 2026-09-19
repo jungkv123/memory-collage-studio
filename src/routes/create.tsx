@@ -5,6 +5,7 @@ import { toggleAudio, useAudioPlayer } from "@/lib/audio-player";
 import { SiteNav } from "@/components/SiteNav";
 import { AiLayoutStudio } from "@/components/create/AiLayoutStudio";
 import { addJournal } from "@/data/journals-store";
+import { stickerLibrary, type StickerDef } from "@/data/sticker-library";
 import { generateJournalText } from "@/lib/ai-journal.functions";
 import polaroidTrain from "@/assets/polaroid-train.jpg";
 import polaroidItaly from "@/assets/polaroid-italy.jpg";
@@ -181,69 +182,6 @@ function slugify(s: string) {
       .slice(0, 40) || `journal-${Date.now()}`
   );
 }
-
-type StickerDef = {
-  id: string;
-  kind: "tape" | "stamp" | "heart" | "star" | "travel";
-  label: string;
-  // visual config
-  color?: string;
-  emoji?: string;
-  tape?: string;
-  w?: number;
-};
-
-const stickerLibrary: { name: string; key: string; items: StickerDef[] }[] = [
-  {
-    name: "胶带",
-    key: "tape",
-    items: [
-      { id: "tape-cream", kind: "tape", label: "奶油胶带", tape: "tape", w: 120 },
-      { id: "tape-pink", kind: "tape", label: "粉色胶带", tape: "tape-pink", w: 120 },
-      { id: "tape-blue", kind: "tape", label: "蓝色胶带", tape: "tape-blue", w: 120 },
-    ],
-  },
-  {
-    name: "邮票",
-    key: "stamp",
-    items: [
-      { id: "stamp-pinkv", kind: "stamp", label: "巴黎邮票", color: "bg-pinkv", emoji: "✦", w: 90 },
-      { id: "stamp-butter", kind: "stamp", label: "罗马邮票", color: "bg-butter", emoji: "☼", w: 90 },
-      { id: "stamp-dusty", kind: "stamp", label: "京都邮票", color: "bg-dusty", emoji: "鳥", w: 90 },
-      { id: "stamp-charcoal", kind: "stamp", label: "夜车邮票", color: "bg-charcoal", emoji: "✺", w: 90 },
-    ],
-  },
-  {
-    name: "爱心",
-    key: "heart",
-    items: [
-      { id: "heart-pink", kind: "heart", label: "粉心", color: "bg-pinkv", emoji: "♥", w: 70 },
-      { id: "heart-butter", kind: "heart", label: "黄心", color: "bg-butter", emoji: "♥", w: 70 },
-      { id: "heart-dusty", kind: "heart", label: "雾心", color: "bg-dusty", emoji: "♥", w: 70 },
-    ],
-  },
-  {
-    name: "星星",
-    key: "star",
-    items: [
-      { id: "star-pink", kind: "star", label: "粉星", color: "bg-pinkv", emoji: "★", w: 70 },
-      { id: "star-butter", kind: "star", label: "金星", color: "bg-butter", emoji: "✦", w: 70 },
-      { id: "star-charcoal", kind: "star", label: "夜星", color: "bg-charcoal", emoji: "✸", w: 70 },
-    ],
-  },
-  {
-    name: "旅行",
-    key: "travel",
-    items: [
-      { id: "tv-plane", kind: "travel", label: "飞机", color: "bg-dusty", emoji: "✈", w: 80 },
-      { id: "tv-coffee", kind: "travel", label: "咖啡", color: "bg-butter", emoji: "☕", w: 80 },
-      { id: "tv-camera", kind: "travel", label: "相机", color: "bg-charcoal", emoji: "📷", w: 80 },
-      { id: "tv-map", kind: "travel", label: "地图", color: "bg-pinkv", emoji: "✺", w: 80 },
-      { id: "tv-sun", kind: "travel", label: "太阳", color: "bg-butter", emoji: "☀", w: 80 },
-      { id: "tv-flower", kind: "travel", label: "花", color: "bg-pinkv", emoji: "✿", w: 80 },
-    ],
-  },
-];
 
 function Create() {
   const navigate = useNavigate();
@@ -433,19 +371,15 @@ function Create() {
   const addStickerToCanvas = (def: StickerDef, pos?: { x: number; y: number }) => {
     const p = pos ?? randPos();
     const w = def.w ?? 90;
-    if (def.kind === "tape") {
-      addFragment({ kind: "sticker", x: p.x, y: p.y, r: Math.round((Math.random() - 0.5) * 20), w, tape: def.tape });
-    } else {
-      addFragment({
-        kind: "sticker",
-        x: p.x,
-        y: p.y,
-        r: Math.round((Math.random() - 0.5) * 16),
-        w,
-        color: def.color,
-        text: def.emoji,
-      });
-    }
+    addFragment({
+      kind: "sticker",
+      x: p.x,
+      y: p.y,
+      r: Math.round((Math.random() - 0.5) * 16),
+      w,
+      src: def.src,
+      text: def.label,
+    });
     flash(`已添加 ${def.label}`);
   };
 
@@ -1191,7 +1125,7 @@ function Fragment({
     if (it.src) {
       return (
         <div data-frag className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
-          <img src={it.src} alt="" draggable={false} className="block w-full rounded-md scrap-shadow border border-charcoal/10 cursor-grab" />
+          <img src={it.src} alt={it.text ?? "拼贴贴纸"} draggable={false} className="block w-full cursor-grab" />
           {Handles}
         </div>
       );
@@ -1287,20 +1221,5 @@ function AudioFragment({
 }
 
 function StickerPreview({ def }: { def: StickerDef }) {
-  if (def.kind === "tape") {
-    return <span className={`${def.tape} block w-full h-4 rotate-[-4deg] rounded-sm`} />;
-  }
-  if (def.kind === "stamp") {
-    return (
-      <div className={`${def.color} w-full h-full grid place-items-center border border-charcoal/15`} style={{ borderStyle: "dashed" }}>
-        <span className="text-cream text-lg">{def.emoji}</span>
-      </div>
-    );
-  }
-  // heart / star / travel — circular badge
-  return (
-    <div className={`${def.color} size-10 rounded-full grid place-items-center border border-charcoal/10`}>
-      <span className="text-cream text-base leading-none">{def.emoji}</span>
-    </div>
-  );
+  return <img src={def.src} alt={def.label} draggable={false} className="block size-full object-contain" />;
 }
