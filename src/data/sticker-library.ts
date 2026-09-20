@@ -14,6 +14,44 @@ import collage013 from "@/assets/stickers/fragmented-collage-013.png.asset.json"
 import collage014 from "@/assets/stickers/fragmented-collage-014.png.asset.json";
 import collage015 from "@/assets/stickers/fragmented-collage-015.png.asset.json";
 
+import packA01 from "@/assets/stickers/fragmented-a-01.png.asset.json";
+import packA02 from "@/assets/stickers/fragmented-a-02.png.asset.json";
+import packA03 from "@/assets/stickers/fragmented-a-03.png.asset.json";
+import packA04 from "@/assets/stickers/fragmented-a-04.png.asset.json";
+import packA05 from "@/assets/stickers/fragmented-a-05.png.asset.json";
+import packA06 from "@/assets/stickers/fragmented-a-06.png.asset.json";
+import packA07 from "@/assets/stickers/fragmented-a-07.png.asset.json";
+import packA08 from "@/assets/stickers/fragmented-a-08.png.asset.json";
+import packA09 from "@/assets/stickers/fragmented-a-09.png.asset.json";
+import packA10 from "@/assets/stickers/fragmented-a-10.png.asset.json";
+import packA11 from "@/assets/stickers/fragmented-a-11.png.asset.json";
+import packA12 from "@/assets/stickers/fragmented-a-12.png.asset.json";
+import packA13 from "@/assets/stickers/fragmented-a-13.png.asset.json";
+import packB01 from "@/assets/stickers/fragmented-b-01.png.asset.json";
+import packB02 from "@/assets/stickers/fragmented-b-02.png.asset.json";
+import packB03 from "@/assets/stickers/fragmented-b-03.png.asset.json";
+import packB04 from "@/assets/stickers/fragmented-b-04.png.asset.json";
+import packB05 from "@/assets/stickers/fragmented-b-05.png.asset.json";
+import packB06 from "@/assets/stickers/fragmented-b-06.png.asset.json";
+import packB07 from "@/assets/stickers/fragmented-b-07.png.asset.json";
+import packC01 from "@/assets/stickers/fragmented-c-01.png.asset.json";
+import packC02 from "@/assets/stickers/fragmented-c-02.png.asset.json";
+import packC03 from "@/assets/stickers/fragmented-c-03.png.asset.json";
+import packC04 from "@/assets/stickers/fragmented-c-04.png.asset.json";
+import packC05 from "@/assets/stickers/fragmented-c-05.png.asset.json";
+import packC06 from "@/assets/stickers/fragmented-c-06.png.asset.json";
+import packC07 from "@/assets/stickers/fragmented-c-07.png.asset.json";
+import packC08 from "@/assets/stickers/fragmented-c-08.png.asset.json";
+import packC09 from "@/assets/stickers/fragmented-c-09.png.asset.json";
+import packC10 from "@/assets/stickers/fragmented-c-10.png.asset.json";
+import packC11 from "@/assets/stickers/fragmented-c-11.png.asset.json";
+import packC12 from "@/assets/stickers/fragmented-c-12.png.asset.json";
+import packC13 from "@/assets/stickers/fragmented-c-13.png.asset.json";
+import packC14 from "@/assets/stickers/fragmented-c-14.png.asset.json";
+import packC15 from "@/assets/stickers/fragmented-c-15.png.asset.json";
+import packC16 from "@/assets/stickers/fragmented-c-16.png.asset.json";
+import packC17 from "@/assets/stickers/fragmented-c-17.png.asset.json";
+
 export type StickerDef = {
   id: string;
   label: string;
