@@ -1,117 +1,166 @@
-import { Link } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
+import { Pause, Play } from "lucide-react";
 import polaroidTrain from "@/assets/polaroid-train.jpg";
+import polaroidKyoto from "@/assets/polaroid-kyoto.jpg";
 import ticket from "@/assets/ticket-paris.jpg";
+import trainAudio from "@/assets/train.mp3.asset.json";
+import cameraSticker from "@/assets/stickers/fragmented-b-01.png.asset.json";
+import starSticker from "@/assets/stickers/fragmented-b-02.png.asset.json";
+import letterSticker from "@/assets/stickers/fragmented-b-06.png.asset.json";
+import bowSticker from "@/assets/stickers/fragmented-c-10.png.asset.json";
+import ribbonSticker from "@/assets/stickers/fragmented-c-12.png.asset.json";
+import { Button } from "@/components/ui/button";
+import { toggleAudio, useAudioPlayer } from "@/lib/audio-player";
+
+const AUDIO_ID = "home-canvas-train";
+const bars = [0.38, 0.7, 1, 0.55, 0.88, 0.45, 0.76, 0.36, 0.92, 0.58, 0.72, 0.46, 0.82];
 
 export function CanvasPreview() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const audio = useAudioPlayer();
+  const isPlaying = audio.id === AUDIO_ID && audio.playing;
+  const progress = audio.id === AUDIO_ID ? audio.progress : 0;
+
+  useEffect(() => {
+    let cleanup = () => {};
+
+    void Promise.all([import("gsap"), import("gsap/ScrollTrigger")]).then(
+      ([gsapModule, scrollModule]) => {
+        const gsap = gsapModule.gsap;
+        const ScrollTrigger = scrollModule.ScrollTrigger;
+        const section = sectionRef.current;
+        if (!section) return;
+
+        gsap.registerPlugin(ScrollTrigger);
+        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (reduceMotion) return;
+
+        const context = gsap.context(() => {
+          gsap.fromTo(
+            "[data-collage-piece]",
+            { y: -70, opacity: 0, rotation: (index) => (index % 2 ? 8 : -8), scale: 0.92 },
+            {
+              y: 0,
+              opacity: 1,
+              rotation: 0,
+              scale: 1,
+              duration: 0.85,
+              stagger: 0.09,
+              ease: "power3.out",
+              scrollTrigger: { trigger: section, start: "top 78%", once: true },
+            },
+          );
+
+          gsap.utils.toArray<HTMLElement>("[data-float-sticker]").forEach((sticker, index) => {
+            gsap.to(sticker, {
+              y: index % 2 ? 6 : -7,
+              rotation: index % 2 ? 1.5 : -1.5,
+              duration: 3.2 + index * 0.45,
+              repeat: -1,
+              yoyo: true,
+              ease: "sine.inOut",
+            });
+          });
+        }, section);
+
+        cleanup = () => context.revert();
+      },
+    );
+
+    return () => cleanup();
+  }, []);
+
   return (
-    <section className="relative max-w-6xl mx-auto px-6 mt-10">
-      <div className="flex items-end justify-between mb-6">
+    <section ref={sectionRef} className="relative mx-auto mt-10 max-w-6xl px-4 sm:px-6">
+      <div className="mb-6 flex items-end justify-between">
         <div>
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-charcoal/50">
-            §01 — 无限画布
-          </span>
-          <h2 className="font-serif text-4xl md:text-5xl italic mt-2 text-balance">
-            拖动 撕开&nbsp; 排列 重复
-          </h2>
+          <span className="text-[10px] font-bold uppercase text-charcoal/50">§01 — 无限画布</span>
+          <h2 className="mt-2 font-serif text-4xl italic text-balance md:text-5xl">拖动 撕开&nbsp; 排列 重复</h2>
         </div>
-        <p className="font-hand text-xl text-dusty hidden md:block max-w-[22ch]">
-          像 Figma 遇上了外婆的剪贴簿。
-        </p>
+        <p className="hidden max-w-[22ch] font-hand text-xl text-dusty md:block">像 Figma 遇上了外婆的剪贴簿。</p>
       </div>
 
-      <div className="relative aspect-[16/10] bg-ivory rounded-[28px] border border-charcoal/10 shadow-inner overflow-hidden">
-        <div className="absolute inset-0 dot-grid opacity-60" />
-        <div className="paper-texture absolute inset-0 pointer-events-none" />
+      <div className="relative min-h-[620px] overflow-hidden rounded-[28px] border border-charcoal/10 bg-ivory shadow-inner sm:min-h-[670px] lg:aspect-[16/10] lg:min-h-0">
+        <div className="dot-grid absolute inset-0 opacity-60" />
+        <div className="paper-texture pointer-events-none absolute inset-0" />
 
-        {/* Polaroid */}
-        <div className="absolute top-[10%] left-[7%] rotate-[-5deg] group">
-          <span className="tape absolute -top-3 left-1/2 -translate-x-1/2 w-14 h-6 rotate-[-3deg] z-10" />
-          <div className="w-56 md:w-64 bg-white p-3 pb-10 scrap-shadow border border-charcoal/5 transition-transform group-hover:scale-[1.03] group-hover:rotate-[-2deg]">
-            <img src={polaroidTrain} alt="" className="block w-full aspect-square object-cover" />
-            <span className="absolute bottom-3 left-4 font-hand text-lg">伯尔尼纳快线，2024</span>
+        <div data-collage-piece className="group absolute left-[5%] top-[7%] z-20 -rotate-6 transition-transform duration-300 hover:z-40 hover:-translate-y-2 hover:rotate-[-2deg]">
+          <span className="tape absolute -top-3 left-1/2 z-10 h-6 w-14 -translate-x-1/2 -rotate-3" />
+          <div className="w-40 border border-charcoal/5 bg-card p-2 pb-8 scrap-shadow sm:w-52 md:w-60">
+            <img src={polaroidTrain} alt="穿行雪山的伯尔尼纳列车" className="block aspect-square w-full object-cover" />
+            <span className="absolute bottom-2 left-3 font-hand text-base sm:text-lg">伯尔尼纳快线，2024</span>
           </div>
         </div>
 
-        {/* Ticket + sticker */}
-        <div className="absolute top-[36%] right-[12%] rotate-[4deg] group">
-          <div className="absolute -top-5 -right-3 z-20 w-16 h-16 rotate-[15deg]">
-            <div className="w-full h-full bg-pinkv rounded-full flex items-center justify-center border border-charcoal/10 scrap-shadow">
-              <span className="text-[9px] font-bold uppercase tracking-tighter text-charcoal text-center leading-tight">
-                巴黎<br />’23
-              </span>
-            </div>
-          </div>
-          <div className="w-56 border border-charcoal/10 scrap-shadow bg-cream overflow-hidden grayscale group-hover:grayscale-0 transition">
-            <img src={ticket} alt="" className="block w-full h-auto" />
+        <div data-collage-piece className="group absolute right-[5%] top-[8%] z-10 rotate-6 transition-transform duration-300 hover:z-40 hover:-translate-y-2 hover:rotate-2">
+          <div className="w-36 border border-charcoal/5 bg-card p-2 pb-7 scrap-shadow sm:w-44 md:w-52">
+            <img src={polaroidKyoto} alt="京都旅行街景" className="block aspect-[4/5] w-full object-cover" />
+            <span className="absolute bottom-1.5 left-3 font-hand text-sm sm:text-base">京都，雨后</span>
           </div>
         </div>
 
-        {/* Handwritten note + audio */}
-        <div className="absolute bottom-[12%] left-[26%] max-w-xs rotate-[-2deg]">
-          <p className="font-hand text-[1.6rem] leading-tight text-charcoal/85">
-            「佛罗伦萨的咖啡，喝起来像旧故事和清晨的雨。」
+        <div data-collage-piece className="absolute left-[32%] top-[8%] z-30 hidden w-28 rotate-3 sm:block md:w-36" data-float-sticker>
+          <img src={cameraSticker.url} alt="银色数码相机贴纸" className="w-full object-contain drop-shadow-sm" />
+        </div>
+        <div data-collage-piece className="absolute left-[47%] top-[30%] z-30 w-14 -rotate-6 sm:w-20" data-float-sticker>
+          <img src={starSticker.url} alt="银色立体星贴纸" className="w-full object-contain drop-shadow-sm" />
+        </div>
+        <div data-collage-piece className="absolute right-[23%] top-[2%] z-30 w-20 rotate-6 sm:w-28" data-float-sticker>
+          <img src={bowSticker.url} alt="蓝色蝴蝶结贴纸" className="w-full object-contain" />
+        </div>
+        <div data-collage-piece className="absolute bottom-[17%] right-[4%] z-30 w-20 rotate-6 sm:w-28" data-float-sticker>
+          <img src={ribbonSticker.url} alt="蓝色蝴蝶结拱贴纸" className="w-full object-contain" />
+        </div>
+
+        <div data-collage-piece className="absolute right-[8%] top-[47%] z-20 w-36 -rotate-3 sm:right-[13%] sm:w-48 md:w-56">
+          <div className="overflow-hidden border border-charcoal/10 bg-cream scrap-shadow transition-transform duration-300 hover:-translate-y-1 hover:rotate-2">
+            <img src={ticket} alt="巴黎旅行票券" className="block h-auto w-full" />
+          </div>
+        </div>
+
+        <div data-collage-piece className="absolute bottom-[25%] left-[4%] z-10 w-40 -rotate-2 sm:left-[27%] sm:w-52 md:w-64">
+          <img src={letterSticker.url} alt="手写爱心信纸贴纸" className="absolute inset-0 h-full w-full object-contain opacity-80" />
+          <p className="relative px-5 py-8 font-hand text-lg leading-tight text-charcoal/85 sm:px-8 sm:text-xl md:text-2xl">
+            「沿着铁轨走远，<br />再把雪山折进日记。」
           </p>
-          <div className="mt-3 flex items-center gap-2">
-            <Waveform />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-dusty">
-              音频 · 0:12
-            </span>
+        </div>
+
+        <div data-collage-piece className="absolute bottom-16 left-[5%] z-30 flex w-64 rotate-1 items-center gap-3 border border-charcoal/10 bg-card/90 px-3 py-2.5 scrap-shadow backdrop-blur-sm sm:bottom-6 sm:left-[30%] sm:w-72">
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="size-9 shrink-0 rounded-full border border-charcoal/10"
+            aria-label={isPlaying ? "暂停列车声音" : "播放列车声音"}
+            onClick={() => toggleAudio(AUDIO_ID, trainAudio.url)}
+          >
+            {isPlaying ? <Pause /> : <Play />}
+          </Button>
+          <div className="min-w-0 flex-1">
+            <div className="flex h-5 items-center gap-[3px]" aria-hidden="true">
+              {bars.map((height, index) => {
+                const active = index / bars.length <= progress;
+                return (
+                  <span
+                    key={index}
+                    className={`w-[3px] origin-center rounded-full transition-colors duration-200 ${active ? "bg-charcoal" : "bg-dusty/50"} ${isPlaying ? "bar" : ""}`}
+                    style={{ height: `${height * 100}%`, animationDelay: `${index * 0.07}s` }}
+                  />
+                );
+              })}
+            </div>
+            <div className="mt-1 flex items-center justify-between text-[9px] font-bold uppercase text-charcoal/55">
+              <span>列车经过雪原</span><span>{Math.round(progress * 100)}%</span>
+            </div>
           </div>
         </div>
 
-        {/* AI assistant card */}
-        <div className="absolute bottom-6 right-6 w-56">
-          <div className="bg-white border border-charcoal/10 rounded-2xl p-4 scrap-shadow space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">
-                AI 排版
-              </span>
-              <span className="size-1.5 rounded-full bg-pinkv animate-pulse" />
-            </div>
-            <div className="grid grid-cols-3 gap-1.5">
-              <div className="aspect-square bg-dusty/25 rounded-md" />
-              <div className="aspect-square bg-pinkv/30 rounded-md" />
-              <div className="aspect-square bg-butter/40 rounded-md" />
-              <div className="aspect-square bg-charcoal/80 rounded-md" />
-              <div className="aspect-square bg-ivory border border-charcoal/10 rounded-md" />
-              <div className="aspect-square bg-dusty/15 rounded-md" />
-            </div>
-            <Link
-              to="/create"
-              className="w-full text-left text-xs font-bold text-charcoal flex items-center justify-between"
-            >
-              生成版面 <span>→</span>
-            </Link>
-          </div>
-        </div>
-
-        {/* Toolbar bottom-left */}
-        <div className="absolute bottom-6 left-6 bg-white/85 backdrop-blur-md border border-charcoal/10 rounded-full px-3 py-2 flex items-center gap-1 scrap-shadow text-[11px]">
-          {["照片", "笔记", "地图", "音频", "贴纸"].map((t) => (
-            <span
-              key={t}
-              className="px-3 py-1.5 rounded-full hover:bg-cream font-semibold text-charcoal/70 cursor-pointer"
-            >
-              {t}
-            </span>
+        <div className="absolute bottom-4 left-4 z-40 flex items-center gap-1 rounded-full border border-charcoal/10 bg-card/85 px-2 py-1.5 text-[10px] backdrop-blur-md scrap-shadow sm:bottom-6 sm:left-6 sm:px-3 sm:py-2 sm:text-[11px]">
+          {["照片", "笔记", "音频", "贴纸"].map((label) => (
+            <span key={label} className="rounded-full px-2 py-1 font-semibold text-charcoal/70 sm:px-3 sm:py-1.5">{label}</span>
           ))}
         </div>
       </div>
     </section>
-  );
-}
-
-function Waveform() {
-  const bars = [0.4, 0.7, 1, 0.6, 0.9, 0.5, 0.8, 0.4, 0.9, 0.6, 0.7];
-  return (
-    <div className="flex items-center gap-[2px] h-5">
-      {bars.map((h, i) => (
-        <span
-          key={i}
-          className="bar w-[3px] bg-dusty rounded-full"
-          style={{ height: `${h * 100}%`, animationDelay: `${i * 0.08}s` }}
-        />
-      ))}
-    </div>
   );
 }
