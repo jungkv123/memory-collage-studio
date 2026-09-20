@@ -23,13 +23,14 @@ export function CanvasPreview() {
 
   useEffect(() => {
     let cleanup = () => {};
+    let cancelled = false;
 
     void Promise.all([import("gsap"), import("gsap/ScrollTrigger")]).then(
       ([gsapModule, scrollModule]) => {
         const gsap = gsapModule.gsap;
         const ScrollTrigger = scrollModule.ScrollTrigger;
         const section = sectionRef.current;
-        if (!section) return;
+        if (!section || cancelled) return;
 
         gsap.registerPlugin(ScrollTrigger);
         const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -67,7 +68,10 @@ export function CanvasPreview() {
       },
     );
 
-    return () => cleanup();
+    return () => {
+      cancelled = true;
+      cleanup();
+    };
   }, []);
 
   return (
