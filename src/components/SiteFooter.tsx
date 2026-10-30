@@ -1,6 +1,6 @@
 export function SiteFooter() {
   return (
-    <footer className="relative border-t border-charcoal/10 bg-ivory/60 mt-32">
+    <footer className="relative border-t border-charcoal/10 bg-ivory/60 mt-16 md:mt-32">
       <div className="paper-texture absolute inset-0 pointer-events-none" />
       <div className="relative max-w-7xl mx-auto px-6 py-16 grid md:grid-cols-12 gap-10">
         <div className="md:col-span-5 space-y-4">

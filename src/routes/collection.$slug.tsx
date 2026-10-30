@@ -72,7 +72,7 @@ function CollectionDetail() {
     <div className="min-h-screen bg-cream animate-in fade-in slide-in-from-bottom-2 duration-500">
       <SiteNav />
 
-      <header className="pt-40 pb-10 px-6 max-w-6xl mx-auto">
+      <header className="pt-28 md:pt-40 pb-10 px-5 md:px-6 max-w-6xl mx-auto">
         <Link to="/collections" className="text-[10px] font-bold uppercase tracking-[0.3em] text-charcoal/50 hover:text-charcoal">
           ← 回到合辑盒子
         </Link>
