@@ -48,11 +48,11 @@ function Explore() {
   return (
     <div className="min-h-screen bg-cream">
       <SiteNav />
-      <header className="pt-40 pb-12 px-6 text-center max-w-4xl mx-auto">
+      <header className="pt-28 md:pt-40 pb-12 px-5 md:px-6 text-center max-w-4xl mx-auto">
         <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-charcoal/50">
           §— 阅读室
         </span>
-        <h1 className="font-serif text-6xl md:text-8xl mt-4 leading-[0.95]">
+        <h1 className="font-serif text-5xl sm:text-6xl md:text-8xl mt-4 leading-[0.95]">
           漫游于<br />
           <span className="italic text-dusty">他人</span>的记忆。
         </h1>
@@ -61,7 +61,7 @@ function Explore() {
         </p>
       </header>
 
-      <div className="max-w-6xl mx-auto px-6 flex flex-wrap items-center gap-2 mb-12">
+      <div className="max-w-6xl mx-auto px-5 md:px-6 flex flex-wrap items-center gap-2 mb-12">
         {filters.map((f, i) => (
           <button
             key={f}
@@ -76,7 +76,7 @@ function Explore() {
         ))}
       </div>
 
-      <section className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 auto-rows-[180px] gap-6 pb-20">
+      <section className="max-w-6xl mx-auto px-5 md:px-6 grid grid-cols-2 md:grid-cols-4 auto-rows-[150px] md:auto-rows-[180px] gap-4 md:gap-6 pb-20">
         {items.map((it, i) => (
           <article
             key={i}

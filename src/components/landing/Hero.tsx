@@ -7,7 +7,7 @@ import stamps from "@/assets/stamps.jpg";
 
 export function Hero() {
   return (
-    <section className="relative pt-40 pb-24 px-6 overflow-hidden">
+    <section className="relative pt-28 md:pt-40 pb-16 md:pb-24 px-5 md:px-6 overflow-hidden">
       <div className="paper-texture absolute inset-0 pointer-events-none" />
 
       {/* Floating fragments */}

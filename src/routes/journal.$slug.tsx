@@ -59,7 +59,7 @@ function JournalDetail() {
       <SiteNav />
 
       {/* Cover */}
-      <header className="pt-32 px-6 max-w-6xl mx-auto">
+      <header className="pt-24 md:pt-32 px-5 md:px-6 max-w-6xl mx-auto">
         <Link
           to="/profile"
           className="text-[10px] font-bold uppercase tracking-[0.3em] text-charcoal/50 hover:text-charcoal"

@@ -65,7 +65,7 @@ function Profile() {
     <div className="min-h-screen bg-cream">
       <SiteNav />
 
-      <header className="pt-40 pb-12 px-6 max-w-6xl mx-auto grid md:grid-cols-12 gap-10 items-end">
+      <header className="pt-28 md:pt-40 pb-12 px-5 md:px-6 max-w-6xl mx-auto grid md:grid-cols-12 gap-10 items-end">
         <div className="md:col-span-7">
           <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-charcoal/50">
             §— 个人档案
