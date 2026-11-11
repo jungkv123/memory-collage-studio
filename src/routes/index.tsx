@@ -8,6 +8,7 @@ import { Features } from "@/components/landing/Features";
 import { AudioMemory } from "@/components/landing/AudioMemory";
 import { JournalGrid } from "@/components/landing/JournalGrid";
 import { Manifesto, Marquee } from "@/components/landing/Manifesto";
+import { MobileHome } from "@/components/mobile/MobileHome";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,7 +24,11 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
-    <div className="min-h-screen bg-cream text-charcoal selection:bg-pinkv/40">
+    <>
+    <div className="md:hidden">
+      <MobileHome />
+    </div>
+    <div className="hidden md:block min-h-screen bg-cream text-charcoal selection:bg-pinkv/40">
       <SiteNav />
       <Hero />
       <CanvasPreview />
@@ -35,5 +40,6 @@ function Index() {
       <Marquee />
       <SiteFooter />
     </div>
+    </>
   );
 }

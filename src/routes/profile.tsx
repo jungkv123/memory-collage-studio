@@ -15,6 +15,8 @@ export const Route = createFileRoute("/profile")({
       { property: "og:description", content: "你在 Fragmented 上的私人旅行剪贴簿。" },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>): { tab?: string } =>
+    typeof search.tab === "string" ? { tab: search.tab } : {},
   component: Profile,
 });
 
@@ -22,7 +24,8 @@ const TABS = ["日志", "草稿", "收藏", "星球"] as const;
 type Tab = (typeof TABS)[number];
 
 function Profile() {
-  const [tab, setTab] = useState<Tab>("日志");
+  const { tab: tabParam } = Route.useSearch();
+  const [tab, setTab] = useState<Tab>(tabParam === "planet" ? "星球" : "日志");
   const stored = useSyncExternalStore(
     (cb) => subscribeJournals(cb),
     () => snapshotJournals(),
