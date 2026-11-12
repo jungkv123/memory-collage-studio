@@ -2,6 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { collections, getJournalsForCollection } from "@/data/journals";
+import blueFrame from "@/assets/stickers/fragmented-c-02.png.asset.json";
+import heartFrame from "@/assets/stickers/fragmented-a-09.png.asset.json";
+import linedNote from "@/assets/stickers/fragmented-b-05.png.asset.json";
+import blueBow from "@/assets/stickers/fragmented-c-10.png.asset.json";
+
+const boxStickers = [blueFrame.url, heartFrame.url, linedNote.url, blueBow.url];
 
 export const Route = createFileRoute("/collections")({
   head: () => ({
@@ -34,7 +40,62 @@ function Collections() {
         </div>
       </header>
 
-      <section className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 pb-20">
+      {/* Phone: boxes as overlapping paper folders */}
+      <section className="md:hidden px-5 pb-16 space-y-12">
+        {collections.map((c, i) => {
+          const count = getJournalsForCollection(c).length;
+          return (
+            <article
+              key={c.title}
+              className={`relative ${i % 2 ? "rotate-1 -translate-x-1" : "-rotate-1 translate-x-1"}`}
+            >
+              <span
+                className={`${i % 2 ? "tape-pink" : "tape"} absolute -top-3 left-8 z-20 h-6 w-20 -rotate-3`}
+                aria-hidden
+              />
+              <div className="relative border border-charcoal/10 bg-ivory p-3 pb-5 scrap-shadow torn-bottom">
+                <div className="paper-texture absolute inset-0 pointer-events-none" />
+                <div className="relative">
+                  <img
+                    src={c.cover}
+                    alt=""
+                    className="block w-full aspect-[4/3] object-cover border border-charcoal/10"
+                  />
+                  <span className="absolute -right-3 -top-3 grid size-12 place-items-center rounded-full bg-charcoal font-serif text-lg italic text-cream scrap-shadow">
+                    {count.toString().padStart(2, "0")}
+                  </span>
+                  <span className="pin absolute -left-1.5 top-4 size-3 rounded-full" aria-hidden />
+                </div>
+                <div className="relative mt-4 flex items-end justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="font-serif italic text-2xl leading-none">{c.title}</h3>
+                    <p className="mt-1.5 font-hand text-lg leading-none text-charcoal/60">{c.subtitle}</p>
+                    <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-charcoal/45">
+                      {count.toString().padStart(2, "0")} 篇日志
+                    </p>
+                  </div>
+                  <Link
+                    to="/collection/$slug"
+                    params={{ slug: c.slug }}
+                    className="shrink-0 bg-charcoal px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] text-cream active:scale-95 transition"
+                  >
+                    打开盒子
+                  </Link>
+                </div>
+              </div>
+              <img
+                src={boxStickers[i % boxStickers.length]}
+                alt=""
+                className={`pointer-events-none absolute w-14 opacity-90 ${
+                  i % 2 ? "-bottom-4 -right-2 -rotate-6" : "-bottom-5 -left-2 rotate-6"
+                }`}
+              />
+            </article>
+          );
+        })}
+      </section>
+
+      <section className="hidden md:grid max-w-6xl mx-auto px-6 md:grid-cols-2 gap-10 pb-20">
         {collections.map((c, i) => {
           const count = getJournalsForCollection(c).length;
           return (

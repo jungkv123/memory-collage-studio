@@ -9,6 +9,8 @@ import stamps from "@/assets/stamps.jpg";
 import ticket from "@/assets/ticket-paris.jpg";
 import map from "@/assets/map-tokyo-torn.jpg";
 import train from "@/assets/polaroid-train.jpg";
+import blueBow from "@/assets/stickers/fragmented-c-10.png.asset.json";
+import travelLabel from "@/assets/stickers/fragmented-b-07.png.asset.json";
 
 export const Route = createFileRoute("/explore")({
   head: () => ({
@@ -44,6 +46,18 @@ const items: Card[] = [
 
 const filters = ["全部", "海边", "城市", "山野", "市集", "安静之地", "长途列车"];
 
+/* Phone magazine flow: every fragment gets its own size, tilt and offset. */
+const mobileShapes = [
+  { span: "col-span-2", rot: "-rotate-1", off: "", aspect: "aspect-[4/3]" },
+  { span: "col-span-1", rot: "rotate-2", off: "translate-y-3", aspect: "aspect-[3/4]" },
+  { span: "col-span-1", rot: "-rotate-2", off: "translate-y-8", aspect: "aspect-[3/4]" },
+  { span: "col-span-2", rot: "rotate-1", off: "", aspect: "aspect-[16/10]" },
+  { span: "col-span-1", rot: "-rotate-1", off: "", aspect: "aspect-square" },
+  { span: "col-span-1", rot: "rotate-2", off: "-translate-y-4", aspect: "aspect-square" },
+  { span: "col-span-2", rot: "-rotate-1", off: "", aspect: "aspect-[5/4]" },
+  { span: "col-span-1", rot: "rotate-1", off: "translate-y-2", aspect: "aspect-[3/4]" },
+];
+
 function Explore() {
   return (
     <div className="min-h-screen bg-cream">
@@ -61,11 +75,11 @@ function Explore() {
         </p>
       </header>
 
-      <div className="max-w-6xl mx-auto px-5 md:px-6 flex flex-wrap items-center gap-2 mb-12">
+      <div className="max-w-6xl mx-auto px-5 md:px-6 flex flex-nowrap md:flex-wrap items-center gap-2 overflow-x-auto no-scrollbar md:overflow-visible mb-8 md:mb-12">
         {filters.map((f, i) => (
           <button
             key={f}
-            className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-[0.18em] border transition ${
+            className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-[0.18em] border transition ${
               i === 0
                 ? "bg-charcoal text-cream border-charcoal"
                 : "bg-ivory border-charcoal/15 hover:bg-white"
@@ -76,7 +90,42 @@ function Explore() {
         ))}
       </div>
 
-      <section className="max-w-6xl mx-auto px-5 md:px-6 grid grid-cols-2 md:grid-cols-4 auto-rows-[150px] md:auto-rows-[180px] gap-4 md:gap-6 pb-20">
+      {/* Phone: irregular magazine flow with visible captions */}
+      <section className="md:hidden relative px-5 pb-16">
+        <img
+          src={blueBow.url}
+          alt=""
+          className="pointer-events-none absolute -top-8 right-4 z-20 w-14 -rotate-12 opacity-90"
+        />
+        <div className="grid grid-cols-2 gap-x-4 gap-y-7">
+          {items.map((it, i) => {
+            const s = mobileShapes[i % mobileShapes.length];
+            return (
+              <article key={i} className={`relative ${s.span} ${s.rot} ${s.off}`}>
+                <span
+                  className={`${it.tape} absolute -top-2 ${i % 2 ? "right-5 rotate-4" : "left-4 -rotate-4"} z-10 h-5 w-14`}
+                  aria-hidden
+                />
+                <div className={`relative ${s.aspect} bg-white p-2 pb-7 border border-charcoal/10 scrap-shadow`}>
+                  <img src={it.src} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  <p className="absolute bottom-1 left-3 right-3 truncate font-hand text-base leading-none text-charcoal/80">
+                    {it.place}
+                  </p>
+                </div>
+                <p className="mt-1.5 font-serif italic text-base leading-tight">{it.title}</p>
+              </article>
+            );
+          })}
+        </div>
+        <div className="mt-10 flex items-center gap-3 border border-charcoal/15 bg-ivory px-4 py-3 scrap-shadow -rotate-1">
+          <img src={travelLabel.url} alt="" className="w-12 shrink-0 -rotate-6" />
+          <p className="min-w-0 font-hand text-xl leading-tight text-charcoal/75">
+            往下翻，还有更多别人留下的碎片。
+          </p>
+        </div>
+      </section>
+
+      <section className="hidden md:grid max-w-6xl mx-auto px-5 md:px-6 grid-cols-2 md:grid-cols-4 auto-rows-[150px] md:auto-rows-[180px] gap-4 md:gap-6 pb-20">
         {items.map((it, i) => (
           <article
             key={i}

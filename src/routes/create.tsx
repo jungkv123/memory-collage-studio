@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ImagePlus, Type, Brush, Music, Sticker, Crop, X, RotateCw, ArrowUp, ArrowDown, Lock, Unlock, Trash2, Play, Pause } from "lucide-react";
+import { ImagePlus, Type, Brush, Music, Sticker, Crop, X, RotateCw, ArrowUp, ArrowDown, Lock, Unlock, Trash2, Play, Pause, Sparkles, Layers } from "lucide-react";
 import { toggleAudio, useAudioPlayer } from "@/lib/audio-player";
 import { SiteNav } from "@/components/SiteNav";
 import { AiLayoutStudio } from "@/components/create/AiLayoutStudio";
@@ -206,6 +206,7 @@ function Create() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [showStickers, setShowStickers] = useState(false);
+  const [layersOpen, setLayersOpen] = useState(false);
   const [aiStudioOpen, setAiStudioOpen] = useState(false);
   const stickerDragRef = useRef<StickerDef | null>(null);
   const offset = useRef({ x: 0, y: 0 });
@@ -325,11 +326,17 @@ function Create() {
     setSelectedId(id);
   };
 
-  const randPos = () => ({
-    x: 200 + Math.random() * 600,
-    y: 200 + Math.random() * 300,
-    r: Math.round((Math.random() - 0.5) * 16),
-  });
+  const randPos = () => {
+    // Keep new fragments inside the visible canvas area at the current zoom.
+    const el = canvasRef.current;
+    const spanX = el ? Math.max(140, el.clientWidth / zoom - 240) : 600;
+    const spanY = el ? Math.max(140, el.clientHeight / zoom - 240) : 300;
+    return {
+      x: 40 + Math.random() * spanX,
+      y: 40 + Math.random() * spanY,
+      r: Math.round((Math.random() - 0.5) * 16),
+    };
+  };
 
   const handleAddImage = () => imgInputRef.current?.click();
   const onImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -396,15 +403,15 @@ function Create() {
   };
 
   const tools = [
-    { Icon: ImagePlus, label: "添加图片", onClick: handleAddImage },
-    { Icon: Type, label: "添加文字", onClick: handleAddText },
-    { Icon: Brush, label: "添加涂鸦", onClick: handleAddDoodle },
-    { Icon: Music, label: "添加背景音乐", onClick: handleAddMusic },
-    { Icon: Sticker, label: "添加素材", onClick: handleAddSticker },
-    { Icon: Crop, label: "裁剪图片", onClick: handleCrop },
+    { Icon: ImagePlus, label: "添加图片", short: "图片", onClick: handleAddImage },
+    { Icon: Type, label: "添加文字", short: "文字", onClick: handleAddText },
+    { Icon: Brush, label: "添加涂鸦", short: "涂鸦", onClick: handleAddDoodle },
+    { Icon: Music, label: "添加背景音乐", short: "音乐", onClick: handleAddMusic },
+    { Icon: Sticker, label: "添加素材", short: "素材", onClick: handleAddSticker },
+    { Icon: Crop, label: "裁剪图片", short: "裁剪", onClick: handleCrop },
   ];
 
-  const onDown = (e: React.MouseEvent, id: number) => {
+  const onDown = (e: React.PointerEvent, id: number) => {
     e.preventDefault();
     const item = items.find((i) => i.id === id);
     if (!item) return;
@@ -413,7 +420,7 @@ function Create() {
     offset.current = { x: e.clientX - item.x * zoom, y: e.clientY - item.y * zoom };
     setDragging(id);
   };
-  const onMove = (e: React.MouseEvent) => {
+  const onMove = (e: React.PointerEvent) => {
     if (interaction.current) {
       const act = interaction.current;
       if (act.mode === "resize") {
@@ -441,7 +448,7 @@ function Create() {
     interaction.current = null;
   };
 
-  const startResize = (e: React.MouseEvent, id: number) => {
+  const startResize = (e: React.PointerEvent, id: number) => {
     e.stopPropagation();
     e.preventDefault();
     const it = items.find((i) => i.id === id);
@@ -449,7 +456,7 @@ function Create() {
     interaction.current = { mode: "resize", id, startX: e.clientX, startY: e.clientY, startW: it.w };
   };
 
-  const startRotate = (e: React.MouseEvent, id: number) => {
+  const startRotate = (e: React.PointerEvent, id: number) => {
     e.stopPropagation();
     e.preventDefault();
     const it = items.find((i) => i.id === id);
@@ -545,12 +552,12 @@ function Create() {
     return (
       <div className="min-h-screen bg-cream">
         <SiteNav />
-        <div className="pt-32 pb-20 px-6 max-w-5xl mx-auto">
+        <div className="pt-28 md:pt-32 pb-16 md:pb-20 px-5 md:px-6 max-w-5xl mx-auto">
           <WizardSteps step={step} />
 
           {step === "upload" && (
             <section className="mt-10">
-              <h1 className="font-serif text-5xl italic">先上传一些照片与素材。</h1>
+              <h1 className="font-serif text-4xl md:text-5xl italic">先上传一些照片与素材。</h1>
               <p className="text-charcoal/60 mt-3">支持拖拽多张图片。可以选填城市与几句备忘。</p>
               <div
                 onDragOver={(e) => e.preventDefault()}
@@ -558,7 +565,7 @@ function Create() {
                   e.preventDefault();
                   onWizardFiles(e.dataTransfer.files);
                 }}
-                className="mt-8 border-2 border-dashed border-charcoal/20 rounded-[28px] p-12 text-center bg-ivory hover:border-pinkv transition-colors"
+                className="mt-8 border-2 border-dashed border-charcoal/20 rounded-[22px] md:rounded-[28px] p-6 md:p-12 text-center bg-ivory hover:border-pinkv transition-colors"
               >
                 <ImagePlus className="mx-auto size-10 text-charcoal/50" strokeWidth={1.4} />
                 <p className="font-serif italic text-2xl mt-3">把照片拖到这里</p>
@@ -627,7 +634,7 @@ function Create() {
 
           {step === "style" && (
             <section className="mt-10">
-              <h1 className="font-serif text-5xl italic">挑一种视觉风格。</h1>
+              <h1 className="font-serif text-4xl md:text-5xl italic">挑一种视觉风格。</h1>
               <p className="text-charcoal/60 mt-3">这会决定胶带颜色、贴纸与版面气质。</p>
               <div className="mt-8 grid sm:grid-cols-2 gap-5">
                 {STYLES.map((s) => {
@@ -664,7 +671,7 @@ function Create() {
 
           {step === "layout" && (
             <section className="mt-10">
-              <h1 className="font-serif text-5xl italic">三种排版预览。</h1>
+              <h1 className="font-serif text-4xl md:text-5xl italic">三种排版预览。</h1>
               <p className="text-charcoal/60 mt-3">选择一个进入编辑器自由调整。</p>
               <div className="mt-8 grid md:grid-cols-3 gap-6">
                 {layoutPreviews.map((lp) => (
@@ -721,23 +728,23 @@ function Create() {
     <div className="min-h-screen bg-cream flex flex-col">
       <SiteNav />
 
-      <div className="pt-28 px-6 flex items-center justify-between max-w-7xl mx-auto w-full">
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">
+      <div className="pt-24 md:pt-28 px-5 md:px-6 flex items-center justify-between gap-3 max-w-7xl mx-auto w-full">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50 truncate">
             {STYLES.find((s) => s.key === chosenStyle)?.name} · {selectedLayout ?? "自定义"} 版面
           </p>
-          <h1 className="font-serif text-3xl italic">{city || "未命名"}的一段小日子。</h1>
+          <h1 className="font-serif text-xl md:text-3xl italic truncate">{city || "未命名"}的一段小日子。</h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <button
             onClick={() => setStep("layout")}
-            className="px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] rounded-full border border-charcoal/15 hover:bg-white"
+            className="px-3 py-1.5 md:px-4 md:py-2 text-[11px] md:text-xs font-bold uppercase tracking-[0.2em] rounded-full border border-charcoal/15 hover:bg-white"
           >
             ← 换版面
           </button>
           <button
             onClick={openPublish}
-            className="px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] rounded-full bg-charcoal text-cream hover:bg-charcoal/85"
+            className="px-3 py-1.5 md:px-4 md:py-2 text-[11px] md:text-xs font-bold uppercase tracking-[0.2em] rounded-full bg-charcoal text-cream hover:bg-charcoal/85"
           >
             发布
           </button>
@@ -745,19 +752,21 @@ function Create() {
       </div>
 
       {/* Canvas */}
-      <div className="mt-6 px-6 pb-6 flex-1">
+      <div className="mt-4 md:mt-6 px-3 md:px-6 flex-1 flex pb-[calc(env(safe-area-inset-bottom)+8.5rem)] md:pb-6">
         <div
           ref={canvasRef}
-          className="relative w-full h-[760px] bg-ivory border border-charcoal/10 rounded-[28px] overflow-hidden shadow-inner cursor-grab active:cursor-grabbing"
-          onMouseMove={onMove}
-          onMouseUp={onUp}
-          onMouseLeave={onUp}
+          className="relative w-full flex-1 min-h-[420px] md:h-[760px] md:flex-none bg-ivory border border-charcoal/10 rounded-[20px] md:rounded-[28px] overflow-hidden shadow-inner cursor-grab active:cursor-grabbing"
+          onPointerMove={onMove}
+          onPointerUp={onUp}
+          onPointerLeave={onUp}
           onDragOver={(e) => e.preventDefault()}
           onDrop={onCanvasDrop}
-          onMouseDown={(e) => {
+          onPointerDown={(e) => {
             if (e.target === e.currentTarget) setSelectedId(null);
           }}
         >
+          <input ref={imgInputRef} type="file" accept="image/*" className="hidden" onChange={onImageFile} />
+          <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={onAudioFile} />
           <div className="absolute inset-0 dot-grid opacity-50" />
           <div className="paper-texture absolute inset-0 pointer-events-none" />
 
@@ -775,8 +784,8 @@ function Create() {
             ))}
           </div>
 
-          {/* Floating toolbar */}
-          <div className="absolute top-5 left-5 bg-white/85 backdrop-blur-md border border-charcoal/10 rounded-2xl p-2 flex flex-col gap-1 scrap-shadow">
+          {/* Floating toolbar — desktop */}
+          <div className="absolute top-5 left-5 hidden md:flex bg-white/85 backdrop-blur-md border border-charcoal/10 rounded-2xl p-2 flex-col gap-1 scrap-shadow">
             {tools.map((t) => (
               <button
                 key={t.label}
@@ -787,13 +796,11 @@ function Create() {
                 <t.Icon className="size-[18px]" strokeWidth={1.6} aria-hidden />
               </button>
             ))}
-            <input ref={imgInputRef} type="file" accept="image/*" className="hidden" onChange={onImageFile} />
-            <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={onAudioFile} />
           </div>
 
-          {/* Sticker panel */}
+          {/* Sticker panel — desktop */}
           {showStickers && (
-            <div className="absolute top-5 left-20 w-72 bg-white/95 backdrop-blur-md border border-charcoal/10 rounded-2xl p-4 scrap-shadow z-20">
+            <div className="absolute top-5 left-20 w-72 hidden md:block bg-white/95 backdrop-blur-md border border-charcoal/10 rounded-2xl p-4 scrap-shadow z-20">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">
                   贴纸库
@@ -844,14 +851,14 @@ function Create() {
           )}
 
           {/* Zoom controls */}
-          <div className="absolute bottom-5 left-5 bg-white/85 backdrop-blur-md border border-charcoal/10 rounded-full px-3 py-1.5 flex items-center gap-2 scrap-shadow text-sm">
+          <div className="absolute bottom-20 md:bottom-5 left-5 bg-white/85 backdrop-blur-md border border-charcoal/10 rounded-full px-3 py-1.5 flex items-center gap-2 scrap-shadow text-sm">
             <button onClick={() => setZoom((z) => Math.max(0.4, z - 0.1))} className="size-7 grid place-items-center">−</button>
             <span className="text-xs font-semibold tabular-nums w-10 text-center">{Math.round(zoom * 100)}%</span>
             <button onClick={() => setZoom((z) => Math.min(1.6, z + 0.1))} className="size-7 grid place-items-center">+</button>
           </div>
 
-          {/* AI panel */}
-          <div className="absolute top-5 right-5 w-72 bg-white border border-charcoal/10 rounded-2xl p-4 scrap-shadow">
+          {/* AI panel — desktop */}
+          <div className="absolute top-5 right-5 w-72 hidden md:block bg-white border border-charcoal/10 rounded-2xl p-4 scrap-shadow">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">
                 AI 排版工作室
@@ -876,8 +883,8 @@ function Create() {
             </button>
           </div>
 
-          {/* Layers panel */}
-          <div className="absolute bottom-5 right-5 w-60 bg-white/90 backdrop-blur-md border border-charcoal/10 rounded-2xl p-3 scrap-shadow">
+          {/* Layers panel — desktop */}
+          <div className="absolute bottom-5 right-5 w-60 hidden md:block bg-white/90 backdrop-blur-md border border-charcoal/10 rounded-2xl p-3 scrap-shadow">
             <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50 mb-2">
               图层 · {items.length}
             </p>
@@ -930,6 +937,153 @@ function Create() {
               })}
             </ul>
           </div>
+
+          {/* Phone: bottom tool bar */}
+          <div className="md:hidden absolute inset-x-2 bottom-2 z-40">
+            <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-md border border-charcoal/15 rounded-2xl p-1.5 scrap-shadow overflow-x-auto no-scrollbar">
+              {tools.map((t) => (
+                <button
+                  key={t.label}
+                  title={t.label}
+                  aria-label={t.label}
+                  onClick={t.onClick}
+                  className="shrink-0 grid place-items-center size-12 rounded-xl bg-cream/70 border border-charcoal/10 active:scale-95 transition"
+                >
+                  <t.Icon className="size-[18px] text-charcoal/80" strokeWidth={1.6} aria-hidden />
+                  <span className="text-[9px] leading-none text-charcoal/60">{t.short}</span>
+                </button>
+              ))}
+              <span className="w-px h-9 shrink-0 bg-charcoal/10" aria-hidden />
+              <button
+                onClick={() => setAiStudioOpen(true)}
+                className="shrink-0 grid place-items-center size-12 rounded-xl bg-butter border border-charcoal/10 active:scale-95 transition"
+              >
+                <Sparkles className="size-[18px] text-charcoal" strokeWidth={1.6} aria-hidden />
+                <span className="text-[9px] leading-none text-charcoal/70">AI 排版</span>
+              </button>
+              <button
+                onClick={() => setLayersOpen(true)}
+                className="shrink-0 grid place-items-center size-12 rounded-xl bg-cream/70 border border-charcoal/10 active:scale-95 transition"
+              >
+                <Layers className="size-[18px] text-charcoal/80" strokeWidth={1.6} aria-hidden />
+                <span className="text-[9px] leading-none text-charcoal/60">图层</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Phone: sticker drawer */}
+          {showStickers && (
+            <div className="md:hidden absolute inset-x-2 bottom-2 z-50 bg-white/95 backdrop-blur-md border border-charcoal/15 rounded-2xl p-3 scrap-shadow">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">贴纸库</span>
+                <button
+                  onClick={() => setShowStickers(false)}
+                  aria-label="关闭贴纸库"
+                  className="size-8 grid place-items-center rounded-full bg-cream border border-charcoal/10 active:scale-95 transition"
+                >
+                  <X className="size-3.5" strokeWidth={2} />
+                </button>
+              </div>
+              <p className="text-[11px] text-charcoal/55 mb-2">点一下就加到画布上</p>
+              <div className="max-h-[42vh] overflow-y-auto pr-1 space-y-3">
+                {stickerLibrary.map((cat) => (
+                  <div key={cat.key}>
+                    <p className="font-serif italic text-sm mb-1.5 text-charcoal/80">{cat.name}</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {cat.items.map((def) => (
+                        <button
+                          key={def.id}
+                          onClick={() => addStickerToCanvas(def)}
+                          title={def.label}
+                          className="aspect-square rounded-lg bg-cream/60 border border-charcoal/10 active:scale-95 transition overflow-hidden p-1.5"
+                        >
+                          <StickerPreview def={def} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Phone: layers drawer */}
+          {layersOpen && (
+            <div className="md:hidden absolute inset-x-2 bottom-2 z-50 bg-white/95 backdrop-blur-md border border-charcoal/15 rounded-2xl p-3 scrap-shadow">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">
+                  图层 · {items.length}
+                </span>
+                <button
+                  onClick={() => setLayersOpen(false)}
+                  aria-label="关闭图层面板"
+                  className="size-8 grid place-items-center rounded-full bg-cream border border-charcoal/10 active:scale-95 transition"
+                >
+                  <X className="size-3.5" strokeWidth={2} />
+                </button>
+              </div>
+              <ul className="max-h-[42vh] overflow-y-auto space-y-1 text-xs">
+                {items.slice().reverse().map((i) => {
+                  const isSel = selectedId === i.id;
+                  return (
+                    <li
+                      key={i.id}
+                      onClick={() => setSelectedId(i.id)}
+                      className={`flex items-center gap-1.5 px-2 py-1.5 rounded cursor-pointer ${
+                        isSel ? "bg-pinkv/20" : "bg-cream/50"
+                      }`}
+                    >
+                      <span className="size-2 rounded-full bg-charcoal/50 shrink-0" />
+                      <span className="capitalize truncate flex-1">{i.kind}</span>
+                      <button
+                        title="上移一层"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          bringForward(i.id);
+                        }}
+                        className="size-8 grid place-items-center rounded bg-white border border-charcoal/10 text-charcoal/70"
+                      >
+                        <ArrowUp className="size-3.5" strokeWidth={2} />
+                      </button>
+                      <button
+                        title="下移一层"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          sendBackward(i.id);
+                        }}
+                        className="size-8 grid place-items-center rounded bg-white border border-charcoal/10 text-charcoal/70"
+                      >
+                        <ArrowDown className="size-3.5" strokeWidth={2} />
+                      </button>
+                      <button
+                        title={i.locked ? "解锁" : "锁定"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleLock(i.id);
+                        }}
+                        className={`size-8 grid place-items-center rounded bg-white border border-charcoal/10 ${
+                          i.locked ? "text-pinkv" : "text-charcoal/70"
+                        }`}
+                      >
+                        {i.locked ? <Lock className="size-3.5" strokeWidth={2} /> : <Unlock className="size-3.5" strokeWidth={2} />}
+                      </button>
+                      <button
+                        title="删除图层"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteItem(i.id);
+                        }}
+                        disabled={i.locked}
+                        className="size-8 grid place-items-center rounded bg-white border border-charcoal/10 text-charcoal/70 disabled:opacity-30"
+                      >
+                        <Trash2 className="size-3.5" strokeWidth={2} />
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
 
@@ -953,11 +1107,11 @@ function Create() {
 
       {publishOpen && (
         <div
-          className="fixed inset-0 bg-charcoal/40 backdrop-blur-sm z-50 grid place-items-center p-6"
+          className="fixed inset-0 bg-charcoal/40 backdrop-blur-sm z-50 grid place-items-center p-4 md:p-6"
           onClick={() => setPublishOpen(false)}
         >
           <div
-            className="bg-cream border border-charcoal/10 rounded-2xl p-6 max-w-lg w-full scrap-shadow"
+            className="bg-cream border border-charcoal/10 rounded-2xl p-4 md:p-6 max-w-lg w-full max-h-[86dvh] overflow-y-auto md:max-h-none md:overflow-visible scrap-shadow"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-baseline justify-between mb-4">
@@ -1023,7 +1177,7 @@ function WizardSteps({ step }: { step: Step }) {
   ];
   const idx = labels.findIndex((l) => l.id === step);
   return (
-    <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.25em]">
+    <div className="flex items-center gap-3 overflow-x-auto no-scrollbar text-[10px] font-bold uppercase tracking-[0.25em]">
       {labels.map((l, i) => (
         <div key={l.id} className="flex items-center gap-3">
           <span className={i <= idx ? "text-charcoal" : "text-charcoal/30"}>{l.label}</span>
@@ -1045,13 +1199,13 @@ function Fragment({
   onDelete,
 }: {
   it: Frag;
-  onDown: (e: React.MouseEvent, id: number) => void;
+  onDown: (e: React.PointerEvent, id: number) => void;
   selected?: boolean;
-  onResizeStart: (e: React.MouseEvent, id: number) => void;
-  onRotateStart: (e: React.MouseEvent, id: number) => void;
+  onResizeStart: (e: React.PointerEvent, id: number) => void;
+  onRotateStart: (e: React.PointerEvent, id: number) => void;
   onDelete: (id: number) => void;
 }) {
-  const base = `absolute select-none ${selected ? "ring-2 ring-pinkv ring-offset-2 ring-offset-ivory rounded-md" : ""}`;
+  const base = `absolute select-none touch-none ${selected ? "ring-2 ring-pinkv ring-offset-2 ring-offset-ivory rounded-md" : ""}`;
   const styleBase: React.CSSProperties = {
     left: it.x,
     top: it.y,
@@ -1064,7 +1218,7 @@ function Fragment({
       <button
         type="button"
         title="删除"
-        onMouseDown={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => {
           e.stopPropagation();
           onDelete(it.id);
@@ -1076,14 +1230,14 @@ function Fragment({
       <button
         type="button"
         title="旋转"
-        onMouseDown={(e) => onRotateStart(e, it.id)}
+        onPointerDown={(e) => onRotateStart(e, it.id)}
         className="absolute -top-3 -left-3 size-6 rounded-full bg-white border border-charcoal/20 text-charcoal grid place-items-center scrap-shadow cursor-grab z-30"
       >
         <RotateCw className="size-3" strokeWidth={2} />
       </button>
       <span
         title="缩放"
-        onMouseDown={(e) => onResizeStart(e, it.id)}
+        onPointerDown={(e) => onResizeStart(e, it.id)}
         className="absolute -bottom-2 -right-2 size-4 bg-white border border-charcoal/40 rounded-sm cursor-se-resize z-30"
       />
     </>
@@ -1093,7 +1247,7 @@ function Fragment({
     const aspectClass =
       it.aspect === "portrait" ? "aspect-[3/4]" : it.aspect === "landscape" ? "aspect-[4/3]" : "aspect-square";
     return (
-      <div data-frag className={`${base}`} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
+      <div data-frag className={`${base}`} style={styleBase} onPointerDown={(e) => onDown(e, it.id)}>
         <div className="relative bg-white p-2 pb-9 scrap-shadow border border-charcoal/10 cursor-grab">
           {it.tape && <span className={`${it.tape} absolute -top-3 left-1/2 -translate-x-1/2 w-16 h-5 rotate-[-3deg]`} />}
           <img src={it.src} alt="" draggable={false} className={`block w-full ${aspectClass} object-cover`} />
@@ -1105,7 +1259,7 @@ function Fragment({
   }
   if (it.kind === "ticket") {
     return (
-      <div data-frag className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
+      <div data-frag className={base} style={styleBase} onPointerDown={(e) => onDown(e, it.id)}>
         <img src={it.src} alt="" draggable={false} className="block w-full scrap-shadow border border-charcoal/10 cursor-grab" />
         {Handles}
       </div>
@@ -1114,7 +1268,7 @@ function Fragment({
   if (it.kind === "sticker") {
     if (it.doodle) {
       return (
-        <div data-frag className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
+        <div data-frag className={base} style={styleBase} onPointerDown={(e) => onDown(e, it.id)}>
           <svg viewBox="0 0 240 100" className="block w-full cursor-grab">
             <path d={it.doodle} stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" className="text-charcoal" />
           </svg>
@@ -1124,14 +1278,14 @@ function Fragment({
     }
     if (it.src) {
       return (
-        <div data-frag className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
+        <div data-frag className={base} style={styleBase} onPointerDown={(e) => onDown(e, it.id)}>
           <img src={it.src} alt={it.text ?? "拼贴贴纸"} draggable={false} className="block w-full cursor-grab" />
           {Handles}
         </div>
       );
     }
     return (
-      <div data-frag className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
+      <div data-frag className={base} style={styleBase} onPointerDown={(e) => onDown(e, it.id)}>
         <div className={`${it.color} size-full aspect-square rounded-full grid place-items-center border border-charcoal/10 scrap-shadow cursor-grab`}>
           <span className="text-xl font-bold text-cream text-center leading-tight">
             {it.text ?? "里斯本"}
@@ -1143,7 +1297,7 @@ function Fragment({
   }
   if (it.kind === "note") {
     return (
-      <div data-frag className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
+      <div data-frag className={base} style={styleBase} onPointerDown={(e) => onDown(e, it.id)}>
         <div className="bg-butter/40 border border-charcoal/10 p-4 scrap-shadow cursor-grab">
           <p className="font-hand text-2xl leading-tight">{it.text}</p>
         </div>
@@ -1164,7 +1318,7 @@ function AudioFragment({
   it: Frag;
   base: string;
   styleBase: React.CSSProperties;
-  onDown: (e: React.MouseEvent, id: number) => void;
+  onDown: (e: React.PointerEvent, id: number) => void;
   handles: React.ReactNode;
 }) {
   const player = useAudioPlayer();
@@ -1174,12 +1328,12 @@ function AudioFragment({
   const progress = isCurrent ? player.progress : 0;
 
   return (
-    <div data-frag className={base} style={styleBase} onMouseDown={(e) => onDown(e, it.id)}>
+    <div data-frag className={base} style={styleBase} onPointerDown={(e) => onDown(e, it.id)}>
       <div
         className={`bg-charcoal text-cream rounded-full px-4 py-2 flex items-center gap-3 scrap-shadow cursor-grab ${
           isCurrent ? "ring-2 ring-butter/70" : ""
         }`}
-        onMouseDown={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => {
           e.stopPropagation();
           toggleAudio(audioId, it.src);
@@ -1187,7 +1341,7 @@ function AudioFragment({
       >
         <button
           type="button"
-          onMouseDown={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
             toggleAudio(audioId, it.src);

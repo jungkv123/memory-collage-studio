@@ -68,12 +68,12 @@ function Profile() {
     <div className="min-h-screen bg-cream">
       <SiteNav />
 
-      <header className="pt-28 md:pt-40 pb-12 px-5 md:px-6 max-w-6xl mx-auto grid md:grid-cols-12 gap-10 items-end">
+      <header className="pt-28 md:pt-40 pb-8 md:pb-12 px-5 md:px-6 max-w-6xl mx-auto grid md:grid-cols-12 gap-6 md:gap-10 items-end">
         <div className="md:col-span-7">
           <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-charcoal/50">
             §— 个人档案
           </span>
-          <h1 className="font-serif text-6xl md:text-8xl mt-3 leading-[0.95]">
+          <h1 className="font-serif text-5xl md:text-8xl mt-3 leading-[0.95]">
             Clara <span className="italic text-dusty">M.</span>
           </h1>
           <p className="font-hand text-2xl text-charcoal/60 mt-4 -rotate-1">
@@ -81,7 +81,12 @@ function Profile() {
           </p>
         </div>
         <div className="md:col-span-5 relative">
-          <div className="bg-white border border-charcoal/10 rounded-2xl p-5 scrap-shadow rotate-[-2deg]">
+          <div className="relative bg-white border border-charcoal/10 rounded-2xl p-4 md:p-5 scrap-shadow rotate-[-2deg]">
+            <span
+              className="tape md:hidden absolute -top-3 left-1/2 -translate-x-1/2 h-6 w-20 -rotate-2 z-10"
+              aria-hidden
+            />
+            <span className="pin md:hidden absolute top-3 right-4 size-3 rounded-full" aria-hidden />
             <div className="grid grid-cols-3 gap-3 text-center">
               <Stat n="14" label="日志" />
               <Stat n="312" label="碎片" />
@@ -98,13 +103,15 @@ function Profile() {
         </div>
       </header>
 
-      <nav className="max-w-6xl mx-auto px-6 mb-10 flex gap-6 border-b border-charcoal/10 text-sm">
+      <nav className="max-w-6xl mx-auto px-5 md:px-6 mb-8 md:mb-10 flex gap-2 md:gap-6 overflow-x-auto no-scrollbar md:overflow-visible md:border-b md:border-charcoal/10 text-sm">
         {TABS.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`pb-3 font-bold uppercase tracking-[0.2em] text-xs cursor-pointer transition-colors ${
-              tab === t ? "border-b-2 border-charcoal text-charcoal" : "text-charcoal/40 hover:text-charcoal"
+            className={`shrink-0 cursor-pointer transition-colors font-bold uppercase tracking-[0.2em] text-xs md:px-0 md:py-0 md:pb-3 md:bg-transparent ${
+              tab === t
+                ? "px-3 py-2 border bg-butter border-charcoal/20 text-charcoal md:border-0 md:border-b-2 md:border-charcoal"
+                : "px-3 py-2 border bg-ivory border-charcoal/15 text-charcoal/45 hover:text-charcoal md:border-0 md:text-charcoal/40"
             }`}
           >
             {t}
@@ -112,39 +119,43 @@ function Profile() {
         ))}
       </nav>
 
-      <section className="max-w-6xl mx-auto px-6 pb-20 animate-in fade-in duration-300" key={tab}>
+      <section className="max-w-6xl mx-auto px-5 md:px-6 pb-20 animate-in fade-in duration-300" key={tab}>
         {tab === "日志" && <JournalGrid items={published} />}
 
         {tab === "草稿" && (
           drafts.length === 0 ? (
             <EmptyState text="还没有草稿。开始写一段碎片吧。" cta="去创作" toCreate />
           ) : (
-            <div className="grid md:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-8">
               {drafts.map((j, i) => (
                 <article
                   key={j.slug}
-                  className={`group bg-white border border-charcoal/10 p-3 pb-4 scrap-shadow ${
+                  className={`group relative bg-white border border-charcoal/10 p-2 pb-3 md:p-3 md:pb-4 scrap-shadow ${
                     i % 2 ? "rotate-1" : "-rotate-1"
                   } hover:rotate-0 transition`}
                 >
+                  <span
+                    className={`${i % 2 ? "tape-pink" : "tape"} md:hidden absolute -top-2 left-1/2 -translate-x-1/2 h-5 w-12 -rotate-2 z-10`}
+                    aria-hidden
+                  />
                   <Link to="/journal/$slug" params={{ slug: j.slug }} className="block cursor-pointer">
                     <img src={j.cover} alt="" className="block w-full aspect-square object-cover opacity-80" />
-                    <h3 className="font-serif italic text-xl mt-3 leading-tight">{j.title}</h3>
+                    <h3 className="font-serif italic text-base md:text-xl mt-2 md:mt-3 leading-tight">{j.title}</h3>
                     <p className="text-[10px] uppercase tracking-[0.2em] text-charcoal/50 mt-1">
                       草稿 · {j.date}
                     </p>
                   </Link>
-                  <div className="mt-3 flex gap-2 text-[10px] uppercase tracking-[0.2em]">
+                  <div className="mt-2 md:mt-3 flex gap-2 text-[11px] md:text-[10px] uppercase tracking-[0.2em]">
                     <Link
                       to="/journal/$slug"
                       params={{ slug: j.slug }}
-                      className="flex-1 text-center py-1.5 rounded-full bg-charcoal text-cream hover:bg-charcoal/85"
+                      className="flex-1 text-center py-2.5 md:py-1.5 rounded-full bg-charcoal text-cream hover:bg-charcoal/85"
                     >
                       继续编辑
                     </Link>
                     <button
                       onClick={() => deleteDraft(j.slug)}
-                      className="flex-1 py-1.5 rounded-full border border-charcoal/15 hover:bg-pinkv/20 cursor-pointer"
+                      className="flex-1 py-2.5 md:py-1.5 rounded-full border border-charcoal/15 hover:bg-pinkv/20 cursor-pointer"
                     >
                       删除
                     </button>
@@ -159,30 +170,34 @@ function Profile() {
           collected.length === 0 ? (
             <EmptyState text="收藏夹还是空的。" cta="去逛逛" toExplore />
           ) : (
-            <div className="grid md:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-8">
               {collected.map((j, i) => (
                 <article
                   key={j.slug}
-                  className={`group bg-white border border-charcoal/10 p-3 pb-4 scrap-shadow ${
+                  className={`group relative bg-white border border-charcoal/10 p-2 pb-3 md:p-3 md:pb-4 scrap-shadow ${
                     i % 2 ? "rotate-1" : "-rotate-1"
                   } hover:rotate-0 transition`}
                 >
+                  <span
+                    className={`${i % 2 ? "tape-blue" : "tape"} md:hidden absolute -top-2 left-1/2 -translate-x-1/2 h-5 w-12 rotate-2 z-10`}
+                    aria-hidden
+                  />
                   <Link to="/journal/$slug" params={{ slug: j.slug }} className="block cursor-pointer">
                     <img src={j.cover} alt="" className="block w-full aspect-square object-cover" />
-                    <h3 className="font-serif italic text-xl mt-3 leading-tight">{j.title}</h3>
+                    <h3 className="font-serif italic text-base md:text-xl mt-2 md:mt-3 leading-tight">{j.title}</h3>
                     <p className="text-[10px] uppercase tracking-[0.2em] text-charcoal/50 mt-1">{j.date}</p>
                   </Link>
-                  <div className="mt-3 flex gap-2 text-[10px] uppercase tracking-[0.2em]">
+                  <div className="mt-2 md:mt-3 flex gap-2 text-[11px] md:text-[10px] uppercase tracking-[0.2em]">
                     <Link
                       to="/journal/$slug"
                       params={{ slug: j.slug }}
-                      className="flex-1 text-center py-1.5 rounded-full bg-charcoal text-cream hover:bg-charcoal/85"
+                      className="flex-1 text-center py-2.5 md:py-1.5 rounded-full bg-charcoal text-cream hover:bg-charcoal/85"
                     >
                       打开
                     </Link>
                     <button
                       onClick={() => removeFromCollection(j.slug)}
-                      className="flex-1 py-1.5 rounded-full border border-charcoal/15 hover:bg-pinkv/20 cursor-pointer"
+                      className="flex-1 py-2.5 md:py-1.5 rounded-full border border-charcoal/15 hover:bg-pinkv/20 cursor-pointer"
                     >
                       取消收藏
                     </button>
@@ -198,7 +213,7 @@ function Profile() {
             <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50 mb-6">
               你的记忆星球 · {cities.length} 颗
             </p>
-            <div className="flex flex-wrap gap-10 items-center justify-center min-h-[360px] bg-ivory border border-charcoal/10 rounded-[28px] p-10 dot-grid">
+            <div className="flex flex-wrap gap-6 md:gap-10 items-center justify-center min-h-[280px] md:min-h-[360px] bg-ivory border border-charcoal/10 rounded-[22px] md:rounded-[28px] p-5 md:p-10 dot-grid">
               {cities.map(({ city, items }, i) => (
                 <button
                   key={city}
@@ -207,11 +222,11 @@ function Profile() {
                   className="group flex flex-col items-center gap-2 cursor-pointer float-y"
                 >
                   <span
-                    className={`size-24 rounded-full grid place-items-center scrap-shadow border border-charcoal/10 transition-transform group-hover:scale-110 group-hover:-rotate-6 ${
+                    className={`size-16 md:size-24 rounded-full grid place-items-center px-1 text-center scrap-shadow border border-charcoal/10 transition-transform group-hover:scale-110 group-hover:-rotate-6 ${
                       ["bg-pinkv", "bg-butter", "bg-dusty", "bg-charcoal"][i % 4]
                     }`}
                   >
-                    <span className="font-serif italic text-cream text-lg">{city}</span>
+                    <span className="font-serif italic text-cream text-xs md:text-lg">{city}</span>
                   </span>
                   <span className="text-[10px] uppercase tracking-[0.2em] text-charcoal/60">
                     {items.length} 篇日志
@@ -267,18 +282,22 @@ function Profile() {
 function JournalGrid({ items }: { items: Journal[] }) {
   if (items.length === 0) return <EmptyState text="还没有发布的日志。" cta="去创作" toCreate />;
   return (
-    <div className="grid md:grid-cols-4 gap-8">
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-8">
       {items.map((j, i) => (
         <Link
           key={j.slug}
           to="/journal/$slug"
           params={{ slug: j.slug }}
-          className={`block bg-white border border-charcoal/10 p-3 pb-8 scrap-shadow ${
+          className={`relative block bg-white border border-charcoal/10 p-1.5 pb-5 md:p-3 md:pb-8 scrap-shadow ${
             i % 2 ? "rotate-1" : "-rotate-1"
           } hover:rotate-0 hover:-translate-y-1 transition cursor-pointer`}
         >
+          <span
+            className={`${i % 2 ? "tape-pink" : "tape"} md:hidden absolute -top-2 left-1/2 -translate-x-1/2 h-5 w-12 -rotate-2 z-10`}
+            aria-hidden
+          />
           <img src={j.cover} alt="" className="block w-full aspect-square object-cover" />
-          <h3 className="font-serif italic text-xl mt-3 leading-tight">{j.title}</h3>
+          <h3 className="font-serif italic text-base md:text-xl mt-2 md:mt-3 leading-tight">{j.title}</h3>
           <p className="text-[10px] uppercase tracking-[0.2em] text-charcoal/50 mt-1">{j.date}</p>
         </Link>
       ))}
@@ -300,7 +319,7 @@ function EmptyState({
   const cls =
     "inline-block mt-6 px-5 py-2 rounded-full bg-charcoal text-cream text-xs font-bold uppercase tracking-[0.2em] hover:bg-charcoal/85";
   return (
-    <div className="text-center py-20 border border-dashed border-charcoal/15 rounded-[28px]">
+    <div className="text-center py-12 md:py-20 border border-dashed border-charcoal/15 rounded-[20px] md:rounded-[28px]">
       <p className="font-serif italic text-2xl text-charcoal/60">{text}</p>
       {toCreate && <Link to="/create" className={cls}>{cta}</Link>}
       {toExplore && <Link to="/explore" className={cls}>{cta}</Link>}
