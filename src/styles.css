@@ -278,3 +278,25 @@
     mix-blend-mode: multiply;
   }
 }
+
+/* ── Mobile UI design system (phones only; desktop untouched) ── */
+@media (max-width: 767px) {
+  :root {
+    --m-display: 28px; --m-h1: 24px; --m-h2: 18px;
+    --m-body: 16px; --m-secondary: 14px; --m-caption: 12px;
+  }
+  body { font-size: var(--m-body); line-height: 1.55; }
+  /* Modern sans for Chinese headings & info; handwriting stays decorative */
+  h1, h2, h3, h4, .font-serif:not(.italic) { font-family: var(--font-sans); letter-spacing: -0.01em; }
+  h1 { font-size: var(--m-h1); line-height: 1.3; font-weight: 600; }
+  h2 { font-size: var(--m-h2); line-height: 1.3; font-weight: 600; }
+  h3 { font-size: var(--m-body); line-height: 1.4; font-weight: 600; }
+  .m-display { font-size: var(--m-display) !important; line-height: 1.25 !important; font-weight: 700 !important; }
+  /* Collapse stray sizes onto the scale */
+  .text-\[9px\], .text-\[10px\], .text-\[11px\], .text-xs { font-size: var(--m-caption); line-height: 1.4; }
+  .text-\[13px\], .text-sm { font-size: var(--m-secondary); line-height: 1.45; }
+  .text-\[15px\], .text-base { font-size: var(--m-body); line-height: 1.55; }
+  /* WCAG AA: lift faint charcoal text on cream/butter/pink */
+  .text-charcoal\/30, .text-charcoal\/40, .text-charcoal\/45, .text-charcoal\/50,
+  .text-charcoal\/55, .text-charcoal\/60, .text-charcoal\/65 { color: color-mix(in oklab, var(--charcoal) 78%, transparent); }
+}

@@ -84,7 +84,7 @@ export function MobileHome() {
             <span className="pin absolute top-8 left-4 size-3 rounded-full" aria-hidden />
             <div className="flex items-end justify-between gap-3">
               <div className="min-w-0">
-                <h1 className="font-serif text-4xl leading-none">开始拼贴</h1>
+                <h1 className="m-display">开始拼贴</h1>
                 <p className="mt-2 text-sm text-charcoal/70 leading-relaxed">
                   照片、票据、文字与声音，
                   <br />
@@ -128,11 +128,16 @@ export function MobileHome() {
                     <Link
                       key="new"
                       to="/create"
-                      className={`${shape.span} ${shape.rot} grid ${shape.aspect} place-items-center border-2 border-dashed border-charcoal/25 bg-ivory/40 text-center text-xs text-charcoal/60 active:scale-95 transition`}
+                      aria-label="新建画布，进入创作"
+                      className={`${shape.span} ${shape.rot} relative grid ${shape.aspect} min-h-28 place-items-center border-2 border-dashed border-charcoal/40 bg-ivory text-center active:scale-95 transition`}
+                      style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent 0 23px, color-mix(in oklab, var(--charcoal) 6%, transparent) 23px 24px)" }}
                     >
-                      <span>
-                        <Plus className="mx-auto mb-1 size-5" />
-                        新建画布
+                      <span className="tape absolute -top-2 left-1/2 h-5 w-14 -translate-x-1/2 -rotate-2" aria-hidden />
+                      <span className="flex flex-col items-center gap-2">
+                        <span className="grid size-16 place-items-center rounded-full bg-charcoal text-cream shadow-lg">
+                          <Plus className="size-8" strokeWidth={2.4} />
+                        </span>
+                        <span className="text-sm font-semibold text-charcoal">新建画布</span>
                       </span>
                     </Link>
                   );
