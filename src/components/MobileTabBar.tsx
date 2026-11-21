@@ -25,12 +25,12 @@ export function MobileTabBar() {
               className="group flex h-full min-h-11 flex-col items-center justify-center gap-1 text-xs font-medium text-charcoal/70 data-[status=active]:font-bold data-[status=active]:text-charcoal"
             >
               {"primary" in t ? (
-                <span className="-mt-6 grid size-12 place-items-center rounded-full bg-charcoal text-cream shadow-[0_8px_24px_-8px_rgba(34,34,34,0.6)] ring-4 ring-cream group-data-[status=active]:bg-dusty group-data-[status=active]:text-charcoal">
+                <span className="-mt-3 grid size-11 place-items-center rounded-full bg-charcoal text-cream shadow-[0_4px_12px_-4px_rgba(34,34,34,0.5)] ring-2 ring-cream/80 group-data-[status=active]:ring-butter group-data-[status=active]:ring-[3px]">
                   <t.Icon className="size-6" strokeWidth={2.2} />
                 </span>
               ) : (
-                <span className="grid h-8 w-14 place-items-center rounded-full transition-colors group-data-[status=active]:bg-butter group-data-[status=active]:ring-1 group-data-[status=active]:ring-charcoal/30">
-                  <t.Icon className="size-6 group-data-[status=active]:fill-charcoal/15" strokeWidth={1.8} />
+                <span className="grid h-7 w-11 place-items-center rounded-full transition-colors group-data-[status=active]:bg-butter/70">
+                  <t.Icon className="size-6 group-data-[status=active]:fill-charcoal/15 group-data-[status=active]:stroke-[2.2]" strokeWidth={1.8} />
                 </span>
               )}
               <span className="truncate">{t.label}</span>

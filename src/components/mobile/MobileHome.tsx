@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useMemo, useSyncExternalStore } from "react";
-import { CalendarDays, ChevronRight, Pause, Play, Plus, Sparkles, Archive } from "lucide-react";
+import { CalendarDays, ChevronRight, Pause, Play, Plus } from "lucide-react";
 import { journals as seedJournals } from "@/data/journals";
 import { snapshotJournals, subscribeJournals } from "@/data/journals-store";
 import { toggleAudio, useAudioPlayer } from "@/lib/audio-player";
@@ -11,7 +11,6 @@ import stampsImg from "@/assets/stamps.jpg";
 import polaroidFrame from "@/assets/stickers/fragmented-a-09.png.asset.json";
 import travelLabel from "@/assets/stickers/fragmented-b-07.png.asset.json";
 import silverStar from "@/assets/stickers/fragmented-b-02.png.asset.json";
-import blueBow from "@/assets/stickers/fragmented-c-10.png.asset.json";
 
 // Existing ambient clips matched to the seed journals that list audio.
 const journalAudio: Record<string, string> = {
@@ -105,10 +104,6 @@ export function MobileHome() {
             </div>
           </Link>
 
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <QuickLink to="/collections" Icon={Archive} label="记忆收藏集" tint="bg-pinkv/25" sticker={blueBow} />
-            <QuickLink to="/explore" Icon={Sparkles} label="探索拼贴" tint="bg-dusty/25" sticker={silverStar} />
-          </div>
         </section>
 
         {/* ── 最近创作 · 拼贴墙 ─────────────────────────── */}
@@ -122,23 +117,20 @@ export function MobileHome() {
             />
             <div className="grid grid-cols-2 gap-x-3 gap-y-5 pt-2">
               {wall.map((entry, i) => {
-                const shape = SHAPES[i % SHAPES.length];
+                const shape = SHAPES[(i + SHAPES.length - 1) % SHAPES.length]!;
                 if (entry.kind === "new") {
                   return (
                     <Link
                       key="new"
                       to="/create"
                       aria-label="新建画布，进入创作"
-                      className={`${shape.span} ${shape.rot} relative grid ${shape.aspect} min-h-28 place-items-center border-2 border-dashed border-charcoal/40 bg-ivory text-center active:scale-95 transition`}
-                      style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent 0 23px, color-mix(in oklab, var(--charcoal) 6%, transparent) 23px 24px)" }}
+                      className="relative col-span-1 -rotate-1 flex aspect-[3/4] flex-col items-center justify-center gap-2 border-2 border-dashed border-charcoal/35 bg-ivory active:scale-95 transition"
                     >
-                      <span className="tape absolute -top-2 left-1/2 h-5 w-14 -translate-x-1/2 -rotate-2" aria-hidden />
-                      <span className="flex flex-col items-center gap-2">
-                        <span className="grid size-16 place-items-center rounded-full bg-charcoal text-cream shadow-lg">
-                          <Plus className="size-8" strokeWidth={2.4} />
-                        </span>
-                        <span className="text-sm font-semibold text-charcoal">新建画布</span>
+                      <span className="tape absolute -top-2 left-1/2 h-4 w-12 -translate-x-1/2 -rotate-2" aria-hidden />
+                      <span className="grid size-11 place-items-center rounded-full bg-charcoal text-cream">
+                        <Plus className="size-6" strokeWidth={2.4} />
                       </span>
+                      <span className="text-sm font-semibold">新建画布</span>
                     </Link>
                   );
                 }
@@ -170,6 +162,9 @@ export function MobileHome() {
                   </Link>
                 );
               })}
+              {wall.length === 1 && (
+                <p className="col-span-1 self-center text-sm text-charcoal/70">还没有作品，点「新建画布」开始第一张拼贴。</p>
+              )}
             </div>
           </div>
         </section>
@@ -362,31 +357,6 @@ function Polaroid({
   );
 }
 
-function QuickLink({
-  to,
-  Icon,
-  label,
-  tint,
-  sticker,
-}: {
-  to: "/collections" | "/explore";
-  Icon: typeof Plus;
-  label: string;
-  tint: string;
-  sticker: { url: string };
-}) {
-  return (
-    <Link
-      to={to}
-      className={`relative flex items-center gap-2 overflow-hidden border border-charcoal/10 px-3 py-3.5 text-sm font-medium active:scale-95 transition ${tint}`}
-    >
-      <Icon className="size-4 text-charcoal/70" />
-      {label}
-      <img src={sticker.url} alt="" className="pointer-events-none absolute -bottom-2 -right-2 w-9 rotate-6 opacity-80" />
-    </Link>
-  );
-}
-
 function SectionTitle({
   title,
   to,
@@ -400,7 +370,7 @@ function SectionTitle({
     <div className="mb-4 flex items-end justify-between gap-3">
       <div className="min-w-0">
         <h2 className="font-serif text-2xl leading-none">{title}</h2>
-        {note && <p className="mt-1 font-hand text-base text-charcoal/50 -rotate-1">{note}</p>}
+        {note && <p className="mt-1 text-xs text-charcoal/70">{note}</p>}
       </div>
       <Link
         to={to}
