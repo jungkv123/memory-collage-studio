@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteNav } from "@/components/SiteNav";
-import { SiteFooter } from "@/components/SiteFooter";
 import italy from "@/assets/polaroid-italy.jpg";
 import kyoto from "@/assets/polaroid-kyoto.jpg";
 import morocco from "@/assets/polaroid-morocco.jpg";
@@ -143,7 +142,6 @@ function Explore() {
         ))}
       </section>
 
-      <SiteFooter />
     </div>
   );
 }

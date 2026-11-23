@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSyncExternalStore } from "react";
 import { SiteNav } from "@/components/SiteNav";
-import { SiteFooter } from "@/components/SiteFooter";
 import { type Journal } from "@/data/journals";
 import { snapshotJournals, subscribeJournals } from "@/data/journals-store";
 
@@ -183,7 +182,6 @@ function JournalDetail() {
         </div>
       </section>
 
-      <SiteFooter />
     </div>
   );
 }

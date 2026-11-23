@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Plus, Trash2, Bell, Plane, Hotel, MapPin, Cloud, Calendar as CalIcon } from "lucide-react";
 import { SiteNav } from "@/components/SiteNav";
-import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -112,7 +111,6 @@ function CalendarPage() {
           </TabsContent>
         </Tabs>
       </main>
-      <SiteFooter />
 
       <TripDialog
         open={!!editing || !!creatingForDay}

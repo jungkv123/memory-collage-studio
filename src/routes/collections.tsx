@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteNav } from "@/components/SiteNav";
-import { SiteFooter } from "@/components/SiteFooter";
 import { collections, getJournalsForCollection } from "@/data/journals";
 import blueFrame from "@/assets/stickers/fragmented-c-02.png.asset.json";
 import heartFrame from "@/assets/stickers/fragmented-a-09.png.asset.json";
@@ -129,7 +128,6 @@ function Collections() {
         })}
       </section>
 
-      <SiteFooter />
     </div>
   );
 }

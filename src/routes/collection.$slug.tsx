@@ -2,7 +2,6 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { Upload, X, Plus } from "lucide-react";
 import { SiteNav } from "@/components/SiteNav";
-import { SiteFooter } from "@/components/SiteFooter";
 import {
   getCollectionBySlug,
   getJournalsForCollection,
@@ -196,7 +195,6 @@ function CollectionDetail() {
         </div>
       </section>
 
-      <SiteFooter />
     </div>
   );
 }

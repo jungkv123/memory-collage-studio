@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteNav } from "@/components/SiteNav";
-import { SiteFooter } from "@/components/SiteFooter";
 import { Hero } from "@/components/landing/Hero";
 import { CanvasPreview } from "@/components/landing/CanvasPreview";
 import { MemoryGlobe } from "@/components/landing/MemoryGlobe";
@@ -38,7 +37,6 @@ function Index() {
       <JournalGrid />
       <Manifesto />
       <Marquee />
-      <SiteFooter />
     </div>
     </>
   );

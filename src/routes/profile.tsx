@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { SiteNav } from "@/components/SiteNav";
-import { SiteFooter } from "@/components/SiteFooter";
 import stamps from "@/assets/stamps.jpg";
 import { type Journal } from "@/data/journals";
 import { snapshotJournals, subscribeJournals } from "@/data/journals-store";
@@ -274,7 +273,6 @@ function Profile() {
         )}
       </section>
 
-      <SiteFooter />
     </div>
   );
 }
