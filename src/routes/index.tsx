@@ -14,6 +14,8 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "Fragmented — 旅行不是一条时间线，而是一幅拼贴画。" },
       { name: "description", content: "Fragmented 把零散的旅行记忆变成无限画布上的艺术拼贴——照片、车票、地图、笔记与声音。" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { property: "og:title", content: "Fragmented — 一份视觉化的旅行档案" },
       { property: "og:description", content: "在一张无限的拼贴画布上，把碎片化的记忆变成视觉故事。" },
     ],

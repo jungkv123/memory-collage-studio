@@ -337,3 +337,12 @@
     .m-section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
   }
 }
+
+/* Phase two: phone browsing only; never affects tablet/desktop. */
+@media (max-width: 767px) {
+  .editorial-home-header { padding-top: calc(env(safe-area-inset-top) + 12px); }
+  .editorial-progress { appearance: none; border: none; background: color-mix(in oklab, var(--cream) 25%, transparent); color: var(--butter); }
+  .editorial-progress::-webkit-progress-bar { background: color-mix(in oklab, var(--cream) 25%, transparent); }
+  .editorial-progress::-webkit-progress-value { background: var(--butter); }
+  .editorial-progress::-moz-progress-bar { background: var(--butter); }
+}
