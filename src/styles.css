@@ -346,3 +346,9 @@
   .editorial-progress::-webkit-progress-value { background: var(--butter); }
   .editorial-progress::-moz-progress-bar { background: var(--butter); }
 }
+
+/* Immersive phone editor: hide the app tab bar while editing (<768px only). */
+@media (max-width: 767px) {
+  body.editor-immersive nav[aria-label="底部导航"] { display: none; }
+  body.editor-immersive { padding-bottom: 0; }
+}

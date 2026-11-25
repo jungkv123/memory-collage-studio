@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ImagePlus, Type, Brush, Music, Sticker, Crop, X, RotateCw, ArrowUp, ArrowDown, Lock, Unlock, Trash2, Play, Pause, Sparkles, Layers } from "lucide-react";
+import { ImagePlus, Type, Brush, Music, Sticker, Crop, X, RotateCw, ArrowUp, ArrowDown, Lock, Unlock, Trash2, Play, Pause, Sparkles, Layers, ChevronLeft } from "lucide-react";
 import { toggleAudio, useAudioPlayer } from "@/lib/audio-player";
 import { SiteNav } from "@/components/SiteNav";
 import { AiLayoutStudio } from "@/components/create/AiLayoutStudio";
@@ -219,6 +219,13 @@ function Create() {
     | { mode: "rotate"; id: number; cx: number; cy: number; startAngle: number; startR: number }
     | null
   >(null);
+
+  // Phone-only immersive editor: CSS hides the bottom tab bar while this class is on <body>.
+  useEffect(() => {
+    if (step !== "editor") return;
+    document.body.classList.add("editor-immersive");
+    return () => document.body.classList.remove("editor-immersive");
+  }, [step]);
 
   const flash = (msg: string) => {
     setToast(msg);
@@ -725,10 +732,38 @@ function Create() {
   }
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <SiteNav />
+    <div className="min-h-[100dvh] md:min-h-screen bg-cream flex flex-col">
+      <div className="hidden md:block">
+        <SiteNav />
+      </div>
 
-      <div className="pt-24 md:pt-28 px-5 md:px-6 flex items-center justify-between gap-3 max-w-7xl mx-auto w-full">
+      {/* Phone: slim editor header */}
+      <header
+        className="md:hidden grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-2 px-3 pb-2 border-b border-charcoal/10 bg-cream/95 backdrop-blur"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}
+      >
+        <button
+          onClick={() => setStep("layout")}
+          aria-label="返回版面选择"
+          className="size-11 grid place-items-center rounded-full active:bg-ivory"
+        >
+          <ChevronLeft className="size-6" strokeWidth={1.8} />
+        </button>
+        <div className="min-w-0 text-center">
+          <p className="m-caption truncate">
+            {STYLES.find((s) => s.key === chosenStyle)?.name} · {selectedLayout ?? "自定义"} 版面
+          </p>
+          <h1 className="m-h2 truncate">{city || "未命名"}的一段小日子</h1>
+        </div>
+        <button
+          onClick={openPublish}
+          className="h-10 px-4 rounded-full bg-charcoal text-cream text-sm font-semibold active:scale-95 transition"
+        >
+          发布
+        </button>
+      </header>
+
+      <div className="hidden pt-24 md:pt-28 px-5 md:px-6 md:flex items-center justify-between gap-3 max-w-7xl mx-auto w-full">
         <div className="min-w-0">
           <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50 truncate">
             {STYLES.find((s) => s.key === chosenStyle)?.name} · {selectedLayout ?? "自定义"} 版面
@@ -752,10 +787,10 @@ function Create() {
       </div>
 
       {/* Canvas */}
-      <div className="mt-4 md:mt-6 px-3 md:px-6 flex-1 flex pb-[calc(env(safe-area-inset-bottom)+8.5rem)] md:pb-6">
+      <div className="mt-2 md:mt-6 px-2 md:px-6 flex-1 flex pb-[calc(env(safe-area-inset-bottom)+4.75rem)] md:pb-6">
         <div
           ref={canvasRef}
-          className="relative w-full flex-1 min-h-[420px] md:h-[760px] md:flex-none bg-ivory border border-charcoal/10 rounded-[20px] md:rounded-[28px] overflow-hidden shadow-inner cursor-grab active:cursor-grabbing"
+          className="relative w-full flex-1 min-h-[420px] md:h-[760px] md:flex-none bg-ivory border border-charcoal/10 rounded-2xl md:rounded-[28px] overflow-hidden shadow-inner cursor-grab active:cursor-grabbing"
           onPointerMove={onMove}
           onPointerUp={onUp}
           onPointerLeave={onUp}
@@ -851,10 +886,10 @@ function Create() {
           )}
 
           {/* Zoom controls */}
-          <div className="absolute bottom-20 md:bottom-5 left-5 bg-white/85 backdrop-blur-md border border-charcoal/10 rounded-full px-3 py-1.5 flex items-center gap-2 scrap-shadow text-sm">
-            <button onClick={() => setZoom((z) => Math.max(0.4, z - 0.1))} className="size-7 grid place-items-center">−</button>
+          <div className="absolute top-3 right-3 md:top-auto md:right-auto md:bottom-5 md:left-5 bg-cream/90 md:bg-white/85 backdrop-blur-md border border-charcoal/10 rounded-full px-1.5 md:px-3 py-1 md:py-1.5 flex items-center gap-2 scrap-shadow text-sm">
+            <button onClick={() => setZoom((z) => Math.max(0.4, z - 0.1))} aria-label="缩小" className="size-9 md:size-7 grid place-items-center">−</button>
             <span className="text-xs font-semibold tabular-nums w-10 text-center">{Math.round(zoom * 100)}%</span>
-            <button onClick={() => setZoom((z) => Math.min(1.6, z + 0.1))} className="size-7 grid place-items-center">+</button>
+            <button onClick={() => setZoom((z) => Math.min(1.6, z + 0.1))} aria-label="放大" className="size-9 md:size-7 grid place-items-center">+</button>
           </div>
 
           {/* AI panel — desktop */}
@@ -938,44 +973,68 @@ function Create() {
             </ul>
           </div>
 
+          {/* Phone: contextual bar for the selected fragment */}
+          {selectedId !== null && !showStickers && !layersOpen && (() => {
+            const cur = items.find((i) => i.id === selectedId);
+            if (!cur) return null;
+            const btn = "size-10 grid place-items-center rounded-full text-charcoal/80 active:bg-ivory disabled:opacity-30";
+            return (
+              <div className="md:hidden absolute top-3 left-3 z-40 flex items-center gap-0.5 bg-cream/95 backdrop-blur-md border border-charcoal/10 rounded-full px-1 py-0.5 scrap-shadow">
+                <button aria-label="上移一层" className={btn} onClick={() => bringForward(cur.id)}><ArrowUp className="size-5" strokeWidth={1.8} /></button>
+                <button aria-label="下移一层" className={btn} onClick={() => sendBackward(cur.id)}><ArrowDown className="size-5" strokeWidth={1.8} /></button>
+                <button aria-label={cur.locked ? "解锁" : "锁定"} className={`${btn} ${cur.locked ? "text-pinkv" : ""}`} onClick={() => toggleLock(cur.id)}>
+                  {cur.locked ? <Lock className="size-5" strokeWidth={1.8} /> : <Unlock className="size-5" strokeWidth={1.8} />}
+                </button>
+                <button aria-label="删除" className={btn} disabled={cur.locked} onClick={() => deleteItem(cur.id)}><Trash2 className="size-5" strokeWidth={1.8} /></button>
+              </div>
+            );
+          })()}
+
           {/* Phone: bottom tool bar */}
-          <div className="md:hidden absolute inset-x-2 bottom-2 z-40">
-            <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-md border border-charcoal/15 rounded-2xl p-1.5 scrap-shadow overflow-x-auto no-scrollbar">
+          <nav
+            aria-label="创作工具"
+            className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-charcoal/10 bg-cream/95 backdrop-blur-xl"
+            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+          >
+            <div className="flex items-stretch justify-between px-1 h-[68px] overflow-x-auto no-scrollbar">
               {tools.map((t) => (
                 <button
                   key={t.label}
                   title={t.label}
                   aria-label={t.label}
                   onClick={t.onClick}
-                  className="shrink-0 grid place-items-center size-12 rounded-xl bg-cream/70 border border-charcoal/10 active:scale-95 transition"
+                  className="min-w-11 flex-1 flex flex-col items-center justify-center gap-1 rounded-xl text-charcoal/80 active:bg-ivory transition"
                 >
-                  <t.Icon className="size-[18px] text-charcoal/80" strokeWidth={1.6} aria-hidden />
-                  <span className="text-[9px] leading-none text-charcoal/60">{t.short}</span>
+                  <t.Icon className="size-[22px]" strokeWidth={1.7} aria-hidden />
+                  <span className="text-xs leading-none">{t.short}</span>
                 </button>
               ))}
-              <span className="w-px h-9 shrink-0 bg-charcoal/10" aria-hidden />
+              <span className="w-px my-4 shrink-0 bg-charcoal/10" aria-hidden />
               <button
                 onClick={() => setAiStudioOpen(true)}
-                className="shrink-0 grid place-items-center size-12 rounded-xl bg-butter border border-charcoal/10 active:scale-95 transition"
+                aria-label="AI 智能排版"
+                className="min-w-11 flex-1 flex flex-col items-center justify-center gap-1 text-charcoal active:scale-95 transition"
               >
-                <Sparkles className="size-[18px] text-charcoal" strokeWidth={1.6} aria-hidden />
-                <span className="text-[9px] leading-none text-charcoal/70">AI 排版</span>
+                <span className="grid place-items-center h-[22px] w-9 rounded-full bg-butter"><Sparkles className="size-4" strokeWidth={1.8} aria-hidden /></span>
+                <span className="text-xs leading-none font-semibold">排版</span>
               </button>
               <button
                 onClick={() => setLayersOpen(true)}
-                className="shrink-0 grid place-items-center size-12 rounded-xl bg-cream/70 border border-charcoal/10 active:scale-95 transition"
+                aria-label="图层"
+                className="min-w-11 flex-1 flex flex-col items-center justify-center gap-1 text-charcoal/80 active:bg-ivory rounded-xl transition"
               >
-                <Layers className="size-[18px] text-charcoal/80" strokeWidth={1.6} aria-hidden />
-                <span className="text-[9px] leading-none text-charcoal/60">图层</span>
+                <Layers className="size-[22px]" strokeWidth={1.7} aria-hidden />
+                <span className="text-xs leading-none">图层</span>
               </button>
             </div>
-          </div>
+          </nav>
 
           {/* Phone: sticker drawer */}
           {showStickers && (
-            <div className="md:hidden absolute inset-x-2 bottom-2 z-50 bg-white/95 backdrop-blur-md border border-charcoal/15 rounded-2xl p-3 scrap-shadow">
+            <div className="md:hidden fixed inset-x-0 bottom-0 z-50 bg-cream border-t border-charcoal/10 rounded-t-2xl px-5 pt-2 pb-[calc(env(safe-area-inset-bottom)+16px)] shadow-[0_-12px_32px_-18px_rgba(34,34,34,0.45)] animate-in slide-in-from-bottom duration-300">
+              <span className="mx-auto mb-2 block h-1 w-10 rounded-full bg-charcoal/20" aria-hidden />
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">贴纸库</span>
+                <span className="m-h2">贴纸库</span>
                 <button
                   onClick={() => setShowStickers(false)}
                   aria-label="关闭贴纸库"
@@ -985,7 +1044,7 @@ function Create() {
                 </button>
               </div>
               <p className="text-[11px] text-charcoal/55 mb-2">点一下就加到画布上</p>
-              <div className="max-h-[42vh] overflow-y-auto pr-1 space-y-3">
+              <div className="max-h-[40vh] overflow-y-auto pr-1 space-y-4">
                 {stickerLibrary.map((cat) => (
                   <div key={cat.key}>
                     <p className="font-serif italic text-sm mb-1.5 text-charcoal/80">{cat.name}</p>
@@ -1009,9 +1068,10 @@ function Create() {
 
           {/* Phone: layers drawer */}
           {layersOpen && (
-            <div className="md:hidden absolute inset-x-2 bottom-2 z-50 bg-white/95 backdrop-blur-md border border-charcoal/15 rounded-2xl p-3 scrap-shadow">
+            <div className="md:hidden fixed inset-x-0 bottom-0 z-50 bg-cream border-t border-charcoal/10 rounded-t-2xl px-5 pt-2 pb-[calc(env(safe-area-inset-bottom)+16px)] shadow-[0_-12px_32px_-18px_rgba(34,34,34,0.45)] animate-in slide-in-from-bottom duration-300">
+              <span className="mx-auto mb-2 block h-1 w-10 rounded-full bg-charcoal/20" aria-hidden />
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-charcoal/50">
+                <span className="m-h2">
                   图层 · {items.length}
                 </span>
                 <button
@@ -1022,15 +1082,15 @@ function Create() {
                   <X className="size-3.5" strokeWidth={2} />
                 </button>
               </div>
-              <ul className="max-h-[42vh] overflow-y-auto space-y-1 text-xs">
+              <ul className="max-h-[40vh] overflow-y-auto space-y-1.5 text-sm">
                 {items.slice().reverse().map((i) => {
                   const isSel = selectedId === i.id;
                   return (
                     <li
                       key={i.id}
                       onClick={() => setSelectedId(i.id)}
-                      className={`flex items-center gap-1.5 px-2 py-1.5 rounded cursor-pointer ${
-                        isSel ? "bg-pinkv/20" : "bg-cream/50"
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl cursor-pointer ${
+                        isSel ? "bg-pinkv/25" : "bg-ivory"
                       }`}
                     >
                       <span className="size-2 rounded-full bg-charcoal/50 shrink-0" />
@@ -1223,7 +1283,7 @@ function Fragment({
           e.stopPropagation();
           onDelete(it.id);
         }}
-        className="absolute -top-3 -right-3 size-6 rounded-full bg-charcoal text-cream grid place-items-center scrap-shadow hover:bg-pinkv hover:text-charcoal z-30"
+        className="absolute -top-4 -right-4 md:-top-3 md:-right-3 size-8 md:size-6 rounded-full bg-charcoal text-cream grid place-items-center scrap-shadow hover:bg-pinkv hover:text-charcoal z-30"
       >
         <X className="size-3" strokeWidth={2.2} />
       </button>
@@ -1231,14 +1291,14 @@ function Fragment({
         type="button"
         title="旋转"
         onPointerDown={(e) => onRotateStart(e, it.id)}
-        className="absolute -top-3 -left-3 size-6 rounded-full bg-white border border-charcoal/20 text-charcoal grid place-items-center scrap-shadow cursor-grab z-30"
+        className="absolute -top-4 -left-4 md:-top-3 md:-left-3 size-8 md:size-6 rounded-full bg-white border border-charcoal/20 text-charcoal grid place-items-center scrap-shadow cursor-grab z-30"
       >
         <RotateCw className="size-3" strokeWidth={2} />
       </button>
       <span
         title="缩放"
         onPointerDown={(e) => onResizeStart(e, it.id)}
-        className="absolute -bottom-2 -right-2 size-4 bg-white border border-charcoal/40 rounded-sm cursor-se-resize z-30"
+        className="absolute -bottom-3 -right-3 md:-bottom-2 md:-right-2 size-6 md:size-4 bg-white border border-charcoal/40 rounded-sm cursor-se-resize z-30"
       />
     </>
   ) : null;
